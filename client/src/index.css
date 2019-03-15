@@ -1,6 +1,29 @@
 /* SHOULD BE .css */
 
+:root {
+	--navheight:55px;
+}
+
 html, body {
 	margin:0;
 	height:100%;
+}
+
+body {
+	background:#FBFBFD;
+}
+
+.definp {
+	outline:0;
+	border:none;
+	background:none;
+	box-shadow:0;
+	font-size:1em;
+}
+
+.rn {
+	height:calc(100vh - var(--navheight));
+	width:100%;
+	position:relative;
+	overflow:scroll;
 }

@@ -7,6 +7,7 @@ import { Route, Redirect } from 'react-router';
 import Main from './pages/main';
 
 // Stuff
+import Navigation from './pages/__forall__/nav';
 import links from './links';
 
 const AuthRoute = ({ component: Component, elsePath, condition, ...settings }) => (
@@ -25,6 +26,7 @@ class App extends Component {
         return(
             <BrowserRouter>
                 <>
+                    <Navigation />
                     <Switch>
                         <Route path={ links["HOME_PAGE"].absolute } component={ Main } />
                     </Switch>

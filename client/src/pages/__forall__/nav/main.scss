@@ -1,0 +1,14 @@
+.gl-nav {
+	$padding: 15px;
+	$width: 100vw;
+
+	height:var(--navheight);
+	width:calc($width - $padding);
+	padding-left:$padding;
+	padding-right:$padding;
+	background:white;
+	border-bottom:1px solid rgba(0, 0, 0, .05);
+	display:flex;
+	align-items:center;
+	justify-content:space-between;
+}

@@ -4,7 +4,9 @@ import './main.scss';
 class Hero extends Component {
 	render() {
 		return(
-			null
+			<div className="rn rn-sections">
+				
+			</div>
 		);
 	}
 }
