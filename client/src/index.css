@@ -24,6 +24,10 @@ body {
 	font-size:1em;
 }
 
+.definp.btn {
+	cursor:pointer;
+}
+
 .rn {
 	height:calc(100vh - var(--navheight));
 	width:100%;
