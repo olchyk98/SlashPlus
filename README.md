@@ -1,2 +1,2 @@
 # SlashPlus
-Website with a lot of stuff for designers / developers.
+Website with many powerful tools for designers / developers.
