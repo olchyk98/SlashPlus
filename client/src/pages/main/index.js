@@ -58,7 +58,34 @@ class Hero extends Component {
 					</div>
 				</article>
 				{/* colours */}
+				<article className="rn-sections-item">
+					<Link to={ "/" } className="rn-sections-item-title">Colours</Link>
+					<div className="rn-sections-item_split" />
+					<div className="rn-sections-item-content grid">
+						<div className="rn-sections-item-palette hov">
+							<div style={{ background: "orange" }} />
+						</div>
+						<div className="rn-sections-item-palette hov">
+							<div style={{ background: "red" }} />
+						</div>
+						<div className="rn-sections-item-palette hov">
+							<div style={{ background: "blue" }} />
+						</div>
+						<div className="rn-sections-item-palette hov">
+							<div style={{ background: "purple" }} />
+						</div>
+					</div>
+				</article>
 				{/* fonts */}
+				<article className="rn-sections-item">
+					<Link to={ "/" } className="rn-sections-item-title">Fonts</Link>
+					<div className="rn-sections-item_split" />
+					<div className="rn-sections-item-content flex">
+						<button className="rn-sections-item-content-font definp" style={{ fontFamily: "Quicksand" }}>Quicksand</button>
+						<button className="rn-sections-item-content-font definp" style={{ fontFamily: "Lato" }}>Lato</button>
+						<button className="rn-sections-item-content-font definp" style={{ fontFamily: "Roboto" }}>Roboto</button>
+					</div>
+				</article>
 				{/* articles */}
 			</div>
 		);
