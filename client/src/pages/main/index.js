@@ -2,7 +2,9 @@ import React, { Component, PureComponent } from 'react';
 import './main.css';
 
 import { Link } from 'react-router-dom';
+import { gql } from 'apollo-boost';
 
+import client from '../../apollo';
 import links from '../../links';
 
 class PalettesItem extends PureComponent {
@@ -126,6 +128,18 @@ class Articles extends PureComponent {
 }
 
 class Hero extends Component {
+	componentDidMount() {
+		client.query({
+			query: gql`
+				{
+					users {
+						id
+					}
+				}
+			`
+		}).then(console.log);
+	}
+
 	render() {
 		return(
 			<div className="rn rn-sections">

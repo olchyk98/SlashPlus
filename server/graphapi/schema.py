@@ -15,7 +15,9 @@ class RootQuery(GraphQL.ObjectType):
 
     # - resolvers -
     def resolve_users(self, info):
-        return User.objects.all()
+    	print(info.context.session.aql)
+    	info.context.session.aql = 4
+    	return User.objects.all()
     # end
 # end
 
