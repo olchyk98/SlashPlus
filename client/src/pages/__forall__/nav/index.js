@@ -9,7 +9,7 @@ import links from '../../../links';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope } from '@fortawesome/free-regular-svg-icons';
-import { faKey } from '@fortawesome/free-solid-svg-icons';
+import { faKey, faTimes, faCheck } from '@fortawesome/free-solid-svg-icons';
 
 // https://css-tricks.com/building-progress-ring-quickly/
 class ProgressRing extends Component {
@@ -77,6 +77,11 @@ class LoginModalInput extends Component {
         }
     }
 
+    static defaultProps = {
+        _required: false,
+        valid: null
+    }
+
     render() {
         return(
             <div className="gl-nav-loginmodal-input">
@@ -91,7 +96,17 @@ class LoginModalInput extends Component {
                         onFocus={ () => this.setState({ inFocus: true }) }
                         onBlur={ () => this.setState({ inFocus: false }) }
                         onChange={ ({ target: { value: a } }) => this.props._onChange(a) }
+                        required={ this.props._required }
                     />
+                    <div className={ `gl-nav-loginmodal-input-icon score${ (this.props.valid === null) ? "" : " active" + ((this.props.valid) ? " valid" : " invalid") }` }>
+                        {
+                            (this.props.valid === null) ? null : (this.props.valid) ? ( // true
+                                <FontAwesomeIcon icon={ faCheck } />
+                            ) : ( // false
+                                <FontAwesomeIcon icon={ faTimes } />
+                            ) 
+                        }
+                    </div>
                 </div>
                 <div className={ `gl-nav-loginmodal-input-underline${ (!this.state.inFocus) ? "" : " infocus" }` } />
             </div>
@@ -103,7 +118,85 @@ LoginModalInput.propTypes = {
     _type: PropTypes.string.isRequired,
     _placeholder: PropTypes.string.isRequired,
     icon: PropTypes.object.isRequired,
-    _onChange: PropTypes.func.isRequired
+    _onChange: PropTypes.func.isRequired,
+    _required: PropTypes.bool,
+    valid: PropTypes.bool
+}
+
+class LoginModalLogin extends Component {
+    render() {
+        return(
+            <form onSubmit={ e => { e.preventDefault(); } }>
+                <h2 className="gl-nav-loginmodal-title">Welcome back!</h2>
+                <LoginModalInput
+                    _type="text"
+                    _placeholder="Login"
+                    icon={ faUser }
+                    _onChange={ value => null }
+                    _required={ true }
+                />
+                <LoginModalInput
+                    _type="password"
+                    _placeholder="Password"
+                    icon={ faKey }
+                    _onChange={ value => null }
+                    _required={ true }
+                />
+                <button className="gl-nav-loginmodal-submit definp btn">Enter</button>
+                <button className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("REGISTER_STAGE") }>Register</button>
+            </form>
+        );
+    }
+}
+
+class LoginModalRegister extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            emailValid: null,
+            loginValid: null
+        }
+
+        this.data = {
+            login: null,
+            email: null,
+            password: null
+        }
+    }
+
+    render() {
+        return(
+            <form onSubmit={ e => { e.preventDefault(); } }>
+                <h2 className="gl-nav-loginmodal-title">Register to continue.</h2>
+                <LoginModalInput
+                    _type="email"
+                    _placeholder="Email"
+                    icon={ faEnvelope }
+                    _onChange={ value => this.data.email = value }
+                    _required={ true }
+                    valid={ null }
+                />
+                <LoginModalInput
+                    _type="text"
+                    _placeholder="Login"
+                    icon={ faUser }
+                    _onChange={ value => this.data.login = value }
+                    _required={ true }
+                    valid={ null }
+                />
+                <LoginModalInput
+                    _type="password"
+                    _placeholder="Password"
+                    icon={ faKey }
+                    _onChange={ value => this.data.password = value }
+                    _required={ true }
+                />
+                <button className="gl-nav-loginmodal-submit definp btn">Enter</button>
+                <button className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("LOGIN_STAGE") }>Login</button>
+            </form>
+        );
+    }
 }
 
 class LoginModal extends Component {
@@ -131,22 +224,17 @@ class LoginModal extends Component {
                     onClick={ this.props.onClose }
                 />
                 <div className="gl-nav-loginmodal">
-                    <div>
-                        <h2 className="gl-nav-loginmodal-title">Welcome back!</h2>
-                        <LoginModalInput
-                            _type="text"
-                            _placeholder="Login"
-                            icon={ faUser }
-                            _onChange={ value => null }
-                        />
-                        <LoginModalInput
-                            _type="password"
-                            _placeholder="Password"
-                            icon={ faKey }
-                            _onChange={ value => null }
-                        />
-                        <button className="gl-nav-loginmodal-submit definp btn">Sign up</button>
-                    </div>
+                    {
+                        (this.state.stage === "LOGIN_STAGE") ? (
+                            <LoginModalLogin
+                                route={ a => this.setState({ stage: a }) }
+                            />
+                        ) : (this.state.stage === "REGISTER_STAGE") ? (
+                            <LoginModalRegister
+                                route={ a => this.setState({ stage: a }) }
+                            />
+                        ) : null
+                    }
                 </div>
             </>
         );
