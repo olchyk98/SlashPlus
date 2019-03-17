@@ -25,4 +25,8 @@ const cookieControl =  {
 	}
 }
 
-export { cookieControl }
+function constructClassName(state) {
+	return Object.entries(state).filter(p => p[1]).map(p => p[0]).join(' ');
+}
+
+export { cookieControl, constructClassName }

@@ -109,7 +109,7 @@
 
 .gl-nav-loginmodal-input {
 	--margin:5px;
-	
+
 	margin-top:var(--margin);
 	margin-bottom:var(--margin);
 	height:40px;
@@ -234,6 +234,16 @@
 	}
 }
 
+.gl-nav-loginmodal-input-underline.error:before {
+	background:red!important;
+	width:100%;
+}
+
+.gl-nav-loginmodal-input-underline.success:before {
+	background:orange!important;
+	width:100%;
+}
+
 .gl-nav-loginmodal-submit {
 	--col:#0085FF;
 	--glow:15px;
@@ -264,12 +274,18 @@
 
 .gl-nav-loginmodal-link {
 	margin-top:15px;
-	color:pink;
+	color:red;
 	text-transform:uppercase;
 	font-weight:300;
 	font-family:"Quicksand";
-	font-size:.9rem;
+	font-size:.8rem;
+	opacity:.85;
 	display:block;
 	margin-left:auto;
 	margin-right:auto;
+	transition:.15s;
+}
+
+.gl-nav-loginmodal-link:hover {
+	opacity:1;
 }

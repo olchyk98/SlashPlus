@@ -5,7 +5,7 @@ import './main.css';
 import { Link } from 'react-router-dom';
 import { gql } from 'apollo-boost';
 
-import { cookieControl } from '../../../utils';
+import { cookieControl, constructClassName } from '../../../utils';
 import links from '../../../links';
 import client from '../../../apollo';
 
@@ -99,18 +99,30 @@ class LoginModalInput extends Component {
                         onBlur={ () => this.setState({ inFocus: false }) }
                         onChange={ ({ target: { value: a } }) => this.props._onChange(a) }
                         required={ this.props._required }
+                        ref={ ref => (this.props._ref) ? this.props._ref(ref) : null }
                     />
-                    <div className={ `gl-nav-loginmodal-input-icon score${ (this.props.valid === null) ? "" : " active" + ((this.props.valid) ? " valid" : " invalid") }` }>
+                    <div className={constructClassName({
+                        "gl-nav-loginmodal-input-icon score": true,
+                        "active": this.props.valid !== null,
+                        "valid": this.props.valid,
+                        "invalid": !this.props.valid
+                    })}>
                         {
                             (this.props.valid === null) ? null : (this.props.valid) ? ( // true
                                 <FontAwesomeIcon icon={ faCheck } />
                             ) : ( // false
                                 <FontAwesomeIcon icon={ faTimes } />
-                            ) 
+                            )
                         }
                     </div>
                 </div>
-                <div className={ `gl-nav-loginmodal-input-underline${ (!this.state.inFocus) ? "" : " infocus" }${ (!this.props.loading) ? "" : " loading" }` } />
+                <div className={constructClassName({
+                    "gl-nav-loginmodal-input-underline": true,
+                    "infocus": this.state.inFocus,
+                    "loading": this.props.loading,
+                    "success": this.props.success,
+                    "error": this.props.error
+                })} />
             </div>
         );
     }
@@ -123,7 +135,10 @@ LoginModalInput.propTypes = {
     _onChange: PropTypes.func.isRequired,
     _required: PropTypes.bool,
     valid: PropTypes.bool,
-    loading: PropTypes.bool
+    loading: PropTypes.bool,
+    error: PropTypes.bool,
+    success: PropTypes.bool,
+    _ref: PropTypes.func
 }
 
 class LoginModalLogin extends Component {
@@ -139,6 +154,11 @@ class LoginModalLogin extends Component {
         this.data = {
             login: null,
             password: null
+        }
+
+        this._refs = {
+            login: React.createRef(),
+            password: React.createRef()
         }
     }
 
@@ -174,13 +194,11 @@ class LoginModalLogin extends Component {
                 return null;
             }
 
-            this.setState(() => ({
-                isSuccess: true
-            }));
+            for(let ma of Object.values(this._refs)) ma.value = "";
 
             cookieControl.set("userid", a.id);
 
-            this.props.onAuth();        
+            this.props.onAuth();
         }).catch((err) => {
             this.setState(() => ({
                 loading: false
@@ -202,6 +220,7 @@ class LoginModalLogin extends Component {
                     loading={ this.state.loading }
                     error={ this.state.isError }
                     success={ this.state.isSuccess }
+                    _ref={ ref => this._refs.login = ref }
                 />
                 <LoginModalInput
                     _type="password"
@@ -212,6 +231,7 @@ class LoginModalLogin extends Component {
                     loading={ this.state.loading }
                     error={ this.state.isError }
                     success={ this.state.isSuccess }
+                    _ref={ ref => this._refs.password = ref }
                 />
                 <button disabled={ this.state.isSuccess || this.state.loading } type="submit" className="gl-nav-loginmodal-submit definp btn">Enter</button>
                 <button disabled={ this.state.isSuccess || this.state.loading } type="button" className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("REGISTER_STAGE") }>Register</button>
@@ -226,7 +246,11 @@ class LoginModalRegister extends Component {
 
         this.state = {
             emailValid: null,
-            loginValid: null
+            loginValid: null,
+            validatingFields: false,
+            isError: false,
+            isSuccess: false,
+            loading: false
         }
 
         this.data = {
@@ -235,19 +259,133 @@ class LoginModalRegister extends Component {
             password: null,
             name: null
         }
+
+        this._refs = {
+            name: React.createRef(),
+            login: React.createRef(),
+            password: React.createRef(),
+            email: React.createRef()
+        }
+
+        this.validateFieldsINT = null;
+    }
+
+    register = () => {
+        if(this.state.loading) return;
+
+        const { login, email, password, name } = this.data;
+
+        this.setState(() => ({
+            loading: true,
+            isError: false
+        }));
+
+        client.mutate({
+            mutation: gql`
+                mutation($name: String!, $password: String!, $email: String!, $login: String!) {
+                    registerUser(name: $name, password: $password, email: $email, login: $login) {
+                        id
+                    }
+                }
+            `,
+            variables: { name, password, email, login }
+        }).then(({ data: { registerUser: a } }) => {
+            this.setState(() => ({
+                loading: false
+            }));
+
+            if(!a) {
+                this.setState(() => ({
+                    isError: true
+                }))
+                return;
+            }
+
+            for(let ma of Object.values(this._refs)) ma.value = "";
+
+            this.props.onAuth();
+        }).catch((err) => {
+            console.error(err);
+            this.setState(() => ({
+                isError: true
+            }));
+        });
+    }
+
+    validateFields = () => {
+        clearTimeout(this.validateFieldsINT);
+        this.validateFieldsINT = setTimeout(this.validateUser, 200);
+    }
+
+    validateUser = () => {
+        if(
+            this.state.validatingFields ||
+            (
+                !this.data.login ||
+                !this.data.login.replace(/\s|\n/g, "").length
+            ) ||
+            (
+                !this.data.email ||
+                !this.data.email.replace(/\s|\n/g, "").length
+            )
+        ) return;
+
+        this.setState(() => ({
+            validatingFields: true
+        }));
+
+        const { login, email } = this.data;
+
+        client.query({
+            query: gql`
+                query($login: String!, $email: String!) {
+                    validateUser(login: $login, email: $email)
+                }
+            `,
+            variables: { login, email }
+        }).then(({ data: { validateUser: a } }) => {
+            this.setState(() => ({
+                validatingFields: false
+            }));
+
+            if(!a) {
+                this.setState(() => ({
+                    isError: true
+                }));
+
+                return;
+            }
+
+            this.setState(() => ({
+                loginValid: a[0],
+                emailValid: a[1]
+            }));
+        }).catch((err) => {
+            console.error(err);
+            this.setState(() => ({
+                isError: true
+            }));
+        });
     }
 
     render() {
         return(
-            <form onSubmit={ e => { e.preventDefault(); } }>
+            <form onSubmit={ e => { e.preventDefault(); this.register(); } }>
                 <h2 className="gl-nav-loginmodal-title">Register to continue.</h2>
                 <LoginModalInput
                     _type="email"
                     _placeholder="Email"
                     icon={ faEnvelope }
-                    _onChange={ value => this.data.email = value }
+                    _onChange={(value) => {
+                        this.data.email = value;
+                        this.validateFields();
+                    }}
                     _required={ true }
-                    valid={ null }
+                    valid={ this.state.emailValid }
+                    success={ this.state.isSuccess }
+                    error={ this.state.isError }
+                    loading={ this.state.loading || this.state.validatingFields }
+                    _ref={ ref => this._refs.email = ref }
                 />
                 <LoginModalInput
                     _type="text"
@@ -255,15 +393,25 @@ class LoginModalRegister extends Component {
                     icon={ faUser }
                     _onChange={ value => this.data.name = value }
                     _required={ true }
-                    valid={ null }
+                    success={ this.state.isSuccess }
+                    error={ this.state.isError }
+                    loading={ this.state.loading }
+                    _ref={ ref => this._refs.name = ref }
                 />
                 <LoginModalInput
                     _type="text"
                     _placeholder="Login"
                     icon={ faUser }
-                    _onChange={ value => this.data.login = value }
+                    _onChange={(value) => {
+                        this.data.login = value;
+                        this.validateFields();
+                    }}
                     _required={ true }
-                    valid={ null }
+                    valid={ this.state.loginValid }
+                    success={ this.state.isSuccess }
+                    error={ this.state.isError }
+                    loading={ this.state.loading || this.state.validatingFields }
+                    _ref={ ref => this._refs.login = ref }
                 />
                 <LoginModalInput
                     _type="password"
@@ -271,9 +419,13 @@ class LoginModalRegister extends Component {
                     icon={ faKey }
                     _onChange={ value => this.data.password = value }
                     _required={ true }
+                    success={ this.state.isSuccess }
+                    error={ this.state.isError }
+                    loading={ this.state.loading }
+                    _ref={ ref => this._refs.password = ref }
                 />
-                <button className="gl-nav-loginmodal-submit definp btn">Enter</button>
-                <button className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("LOGIN_STAGE") }>Login</button>
+                <button type="submit" disabled={ this.state.loading || this.state.validatingFields } className="gl-nav-loginmodal-submit definp btn">Enter</button>
+                <button type="button" disabled={ this.state.loading } className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("LOGIN_STAGE") }>Login</button>
             </form>
         );
     }
@@ -462,10 +614,10 @@ class Hero extends Component {
                                 }));
                             }} className="definp btn">Login</button>
                         ) : (
-                         <NavAccount
-                            client={ this.state.client }
-                            onLogout={ this.checkAuth }
-                        />   
+                             <NavAccount
+                                client={ this.state.client }
+                                onLogout={ this.checkAuth }
+                            />
                         )
                     }
     			</nav>
