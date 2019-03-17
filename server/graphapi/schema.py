@@ -2,6 +2,8 @@ import graphene as GraphQL
 from graphene_django.types import DjangoObjectType
 from .models import User
 
+from random import randint
+
 # --- TYPES ---
 class UserType(DjangoObjectType):
     class Meta:
@@ -15,8 +17,7 @@ class RootQuery(GraphQL.ObjectType):
 
     # - resolvers -
     def resolve_users(self, info):
-    	print(info.context.session.aql)
-    	info.context.session.aql = 4
+    	# info.context.session['f'] = None
     	return User.objects.all()
     # end
 # end
