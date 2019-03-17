@@ -1,4 +1,5 @@
 import React, { Component, PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import './main.css';
 
 import { Link } from 'react-router-dom';
@@ -12,19 +13,17 @@ class PalettesItem extends PureComponent {
 		return(
 			<div className="rn-sections-item-palette">
 				{
-					[
-						"#624480",
-						"#714E93",
-						"#865DAF",
-						"#A96DD1",
-						"#B57EDC"
-					].map((session, index) => (
+					this.props.colors.map((session, index) => (
 						<div key={ index } style={{ background: session }} />
 					))
 				}
 			</div>
 		);
 	}
+}
+
+PalettesItem.propTypes = {
+	colors: PropTypes.array.isRequired
 }
 
 class Palettes extends PureComponent {
@@ -34,14 +33,27 @@ class Palettes extends PureComponent {
 				<Link to={ "/" } className="rn-sections-item-title">Color palettes</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content grid">
-					<PalettesItem />
-					<PalettesItem />
-					<PalettesItem />
-					<PalettesItem />
+					{
+						(this.props.palettes) ? (
+							this.props.palettes.map((io) => (
+								<PalettesItem
+									key={ io.id }
+									colors={ io.colors }
+								/>
+							))
+						) : <>Loading</>
+					}
 				</div>
 			</article>
 		);
 	}
+}
+
+Palettes.propTypes = {
+	palettes: PropTypes.oneOfType([
+		PropTypes.array,
+		PropTypes.bool
+	])
 }
 
 class ColoursItem extends PureComponent {
@@ -128,11 +140,50 @@ class Articles extends PureComponent {
 }
 
 class Hero extends Component {
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			assets: false
+		}
+	}
+
+	// TODO: Loading placeholder
+	// TODO: Create and fetch more data
+	// TODO: Fill color palettes
+
+	componentDidMount() {
+		client.query({
+			query: gql`
+				query($palettesLimit: Int!) {
+					getColorPalletes(limit: $palettesLimit) {
+						id,
+						colors
+					},
+					# getColors
+				}
+			`,
+			variables: {
+				palettesLimit: 4
+			}
+		}).then(({ data: { getColorPalletes: a } }) => {
+			if(!a) return;
+
+			this.setState(() => ({
+				assets: {
+					palettes: a.map(({ id, colors }) => ({ id, colors }))
+				}
+			}));
+		}).catch(console.error);
+	}
+
 	render() {
 		return(
 			<div className="rn rn-sections">
 				{/* color palettes */}
-				<Palettes />
+				<Palettes
+					palettes={ this.state.assets && this.state.assets.palettes }
+				/>
 				{/* colours */}
 				<Colours />
 				{/* fonts */}
