@@ -3,9 +3,11 @@ import PropTypes from 'prop-types';
 import './main.css';
 
 import { Link } from 'react-router-dom';
+import { gql } from 'apollo-boost';
 
 import { cookieControl } from '../../../utils';
 import links from '../../../links';
+import client from '../../../apollo';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faEnvelope } from '@fortawesome/free-regular-svg-icons';
@@ -108,7 +110,7 @@ class LoginModalInput extends Component {
                         }
                     </div>
                 </div>
-                <div className={ `gl-nav-loginmodal-input-underline${ (!this.state.inFocus) ? "" : " infocus" }` } />
+                <div className={ `gl-nav-loginmodal-input-underline${ (!this.state.inFocus) ? "" : " infocus" }${ (!this.props.loading) ? "" : " loading" }` } />
             </div>
         );
     }
@@ -120,30 +122,99 @@ LoginModalInput.propTypes = {
     icon: PropTypes.object.isRequired,
     _onChange: PropTypes.func.isRequired,
     _required: PropTypes.bool,
-    valid: PropTypes.bool
+    valid: PropTypes.bool,
+    loading: PropTypes.bool
 }
 
 class LoginModalLogin extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            loading: false,
+            isError: false,
+            isSuccess: false
+        }
+
+        this.data = {
+            login: null,
+            password: null
+        }
+    }
+
+    login = () => {
+        if(this.state.loading) return;
+
+        const { login, password } = this.data;
+
+        this.setState(() => ({
+            loading: true,
+            isError: false,
+            isSuccess: false
+        }));
+
+        client.mutate({
+            mutation: gql`
+                mutation($login: String!, $password: String!) {
+                    loginUser(login: $login, password: $password) {
+                        id,
+                        name
+                    }
+                }
+            `,
+            variables: { login, password }
+        }).then(({ data: { loginUser: a } }) => {
+            this.setState(() => ({ loading: false }));
+
+            if(!a) {
+                this.setState(() => ({
+                    isError: true
+                }));
+
+                return null;
+            }
+
+            this.setState(() => ({
+                isSuccess: true
+            }));
+
+            cookieControl.set("userid", a.id);
+
+            this.props.onAuth();        
+        }).catch((err) => {
+            this.setState(() => ({
+                loading: false
+            }));
+            console.error(err);
+        });
+    }
+
     render() {
         return(
-            <form onSubmit={ e => { e.preventDefault(); } }>
+            <form onSubmit={ e => { e.preventDefault(); this.login(); } }>
                 <h2 className="gl-nav-loginmodal-title">Welcome back!</h2>
                 <LoginModalInput
                     _type="text"
                     _placeholder="Login"
                     icon={ faUser }
-                    _onChange={ value => null }
+                    _onChange={ value => this.data.login = value }
                     _required={ true }
+                    loading={ this.state.loading }
+                    error={ this.state.isError }
+                    success={ this.state.isSuccess }
                 />
                 <LoginModalInput
                     _type="password"
                     _placeholder="Password"
                     icon={ faKey }
-                    _onChange={ value => null }
+                    _onChange={ value => this.data.password = value }
                     _required={ true }
+                    loading={ this.state.loading }
+                    error={ this.state.isError }
+                    success={ this.state.isSuccess }
                 />
-                <button className="gl-nav-loginmodal-submit definp btn">Enter</button>
-                <button className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("REGISTER_STAGE") }>Register</button>
+                <button disabled={ this.state.isSuccess || this.state.loading } type="submit" className="gl-nav-loginmodal-submit definp btn">Enter</button>
+                <button disabled={ this.state.isSuccess || this.state.loading } type="button" className="gl-nav-loginmodal-link definp btn" onClick={ () => this.props.route("REGISTER_STAGE") }>Register</button>
             </form>
         );
     }
@@ -161,7 +232,8 @@ class LoginModalRegister extends Component {
         this.data = {
             login: null,
             email: null,
-            password: null
+            password: null,
+            name: null
         }
     }
 
@@ -174,6 +246,14 @@ class LoginModalRegister extends Component {
                     _placeholder="Email"
                     icon={ faEnvelope }
                     _onChange={ value => this.data.email = value }
+                    _required={ true }
+                    valid={ null }
+                />
+                <LoginModalInput
+                    _type="text"
+                    _placeholder="Name"
+                    icon={ faUser }
+                    _onChange={ value => this.data.name = value }
                     _required={ true }
                     valid={ null }
                 />
@@ -228,10 +308,12 @@ class LoginModal extends Component {
                         (this.state.stage === "LOGIN_STAGE") ? (
                             <LoginModalLogin
                                 route={ a => this.setState({ stage: a }) }
+                                onAuth={ () => { this.props.onAuth(); this.props.onClose(); } }
                             />
                         ) : (this.state.stage === "REGISTER_STAGE") ? (
                             <LoginModalRegister
                                 route={ a => this.setState({ stage: a }) }
+                                onAuth={ () => { this.props.onAuth(); this.props.onClose(); } }
                             />
                         ) : null
                     }
@@ -241,17 +323,117 @@ class LoginModal extends Component {
     }
 }
 
+class NavAccount extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            hover: false,
+            logoutProcessing: false
+        }
+    }
+
+    logout = () => {
+        if(this.state.logoutProcessing) return;
+
+        this.setState(() => ({
+            logoutProcessing: true
+        }));
+
+        client.mutate({
+            mutation: gql`
+                mutation {
+                    logout {
+                        id
+                    }
+                }
+            `
+        }).then(({ data: { logout: a } }) => {
+            this.setState(() => ({
+                logoutProcessing: false
+            }));
+
+            if(!a) return null;
+
+            cookieControl.delete("userid");
+            this.props.onLogout();
+        }).catch((err) => {
+            this.setState(() => ({
+                logoutProcessing: false
+            }));
+            console.error(err);
+        });
+    }
+
+    render() {
+        return(
+            <div className="gl-nav-name" onMouseEnter={ () => this.setState({ hover: true }) }
+                 onMouseLeave={ () => this.setState({ hover: false }) }>
+                {
+                    (!this.state.hover) ? null : (
+                        <button onClick={ this.logout } className="definp btn">Logout</button>
+                    )
+                }
+                <Link to="/">{ this.props.client.name }</Link>
+            </div>
+        );
+    }
+}
+
+NavAccount.propTypes = {
+    client: PropTypes.object,
+    onLogout: PropTypes.func.isRequired
+}
+
 class Hero extends Component {
 	constructor(props) {
 		super(props);
 
+        this.clientID = cookieControl.get("userid");
+
         this.state = {
             lginModal: false,
-            clientID: cookieControl.get("userid")
+            client: (!this.clientID) ? null : {
+                id: this.clientID,
+                name: "..."
+            }
         }
 
 		this.lCircleSize = 40;
 	}
+
+    componentDidMount() {
+        if(this.state.client) {
+            this.checkAuth();
+        }
+    }
+
+    checkAuth = () => {
+        const reset = () => this.setState(() => ({ client: null }));
+
+        client.query({
+            query: gql`
+                query {
+                    user {
+                        id,
+                        name
+                    }
+                }
+            `
+        }).then(({ data: { user: a } }) => {
+            if(!a) return reset();
+
+            this.setState(() => ({
+                client: {
+                    id: a.id,
+                    name: a.name
+                }
+            }));
+        }).catch((err) => {
+            console.error(err);
+            reset();
+        });
+    }
 
 	render() {
 		return(
@@ -271,22 +453,26 @@ class Hero extends Component {
     					}
     				</div>
                     {
-                        (this.state.clientID) ? (
-                            <Link to="/">Mark Stalker</Link>
-                        ) : (
+                        (!this.state.client) ? (
                             <button onClick={() => {
-                                if(this.state.clientID) return;
+                                if(this.props.clientID) return;
 
                                 this.setState(() => ({
                                     lginModal: true
                                 }));
                             }} className="definp btn">Login</button>
-                        )    
+                        ) : (
+                         <NavAccount
+                            client={ this.state.client }
+                            onLogout={ this.checkAuth }
+                        />   
+                        )
                     }
     			</nav>
                 <LoginModal
                     active={ this.state.lginModal }
                     onClose={ () => this.setState(() => ({ lginModal: false })) }
+                    onAuth={ this.checkAuth }
                 />
             </>
 		);

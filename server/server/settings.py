@@ -36,9 +36,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'graphapi',
     'graphene_django',
-    'corsheaders'
+    'corsheaders',
+    'graphql',
+    'graphapi'
 ]
 
 MIDDLEWARE = [
@@ -57,7 +58,7 @@ MIDDLEWARE = [
 CORS_ORIGIN_WHITELIST = (
     'localhost:3000',
     '127.0.0.1:3000',
-    '192.168.10.170:3000'    
+    '192.168.10.170:3000',
 )
 
 CORS_ALLOW_CREDENTIALS = True

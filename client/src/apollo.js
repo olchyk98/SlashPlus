@@ -9,7 +9,17 @@ const client = new ApolloClient({
 		uri: api.api,
 		credentials: 'include',
 	}),
-	cache: new InMemoryCache()
+	cache: new InMemoryCache(),
+	defaultOptions: { // disable cache
+        watchQuery: {
+          fetchPolicy: 'network-only',
+          errorPolicy: 'ignore',
+        },
+        query: {
+          fetchPolicy: 'network-only',
+          errorPolicy: 'all',
+        }
+    }
 });
 
 export default client;

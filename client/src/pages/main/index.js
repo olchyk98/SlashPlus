@@ -128,18 +128,6 @@ class Articles extends PureComponent {
 }
 
 class Hero extends Component {
-	componentDidMount() {
-		client.query({
-			query: gql`
-				{
-					users {
-						id
-					}
-				}
-			`
-		}).then(console.log);
-	}
-
 	render() {
 		return(
 			<div className="rn rn-sections">

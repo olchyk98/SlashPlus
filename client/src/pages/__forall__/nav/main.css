@@ -15,9 +15,24 @@
 	font-size:1.05rem;
 }
 
-.gl-nav > a {
+.gl-nav a {
 	text-decoration:none;
 	color:black;
+}
+
+.gl-nav-name > * {
+	--margin:7.5px;
+
+	margin-left:var(--margin);
+	margin-right:var(--margin);
+}
+
+.gl-nav-name > *:first-child {
+	margin-left:0;
+}
+
+.gl-nav-name > *:last-child {
+	margin-right:0;
 }
 
 .rn-nav-loading {
@@ -186,7 +201,6 @@
 	height:100%;
 	position:absolute;
 	left:50%;
-	margin-right:50%;
 	transform:translateX(-50%);
 }
 
@@ -194,8 +208,30 @@
 	--glow:2.5px!important;
 }
 
-.gl-nav-loginmodal-input-underline.infocus:before {
+.gl-nav-loginmodal-input-underline.infocus:not(.loading):before {
 	width:100%;
+}
+
+.gl-nav-loginmodal-input-underline.loading:before {
+	animation:__nav-loginmodal-input-underline-loading-am 1s ease-in-out infinite;
+}
+
+@keyframes __nav-loginmodal-input-underline-loading-am {
+	0% {
+		width:0;
+		left:0;
+		transform:translateX(0%);
+	}
+	50% {
+		width:50%;
+		left:50%;
+		transform:translateX(-50%);
+	}
+	100% {
+		left:100%;
+		width:0;
+		transform:translateX(-50%);
+	}
 }
 
 .gl-nav-loginmodal-submit {

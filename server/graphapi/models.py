@@ -7,4 +7,6 @@ class User(models.Model):
 	login = models.CharField(max_length = 100)
 	password = models.CharField(max_length = 600)
 	email = models.CharField(max_length = 300)
+
+	__str__ = lambda self: self.login
 # end
