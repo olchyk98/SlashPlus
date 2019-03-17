@@ -10,3 +10,10 @@ class User(models.Model):
 
 	__str__ = lambda self: self.login
 # end
+
+class ColorPalette(models.Model):
+	creatorID = models.CharField(max_length = 20)
+	colors = models.CharField(max_length = 2000) # JSON { colors: ['#*', '#*', '#*'] }
+
+	__str__ = lambda self: self.colors[:10]
+# end

@@ -1,16 +1,32 @@
 import graphene as GraphQL
 from graphql import GraphQLError
-
-from django.db.models import Q
 from graphene_django.types import DjangoObjectType
 
-from .models import User
+from django.db.models import Q
+import json
+
+from .models import User, ColorPalette
 
 # --- TYPES --- #
-class UserType(DjangoObjectType):
+class ColorPaletteType(DjangoObjectType):
+    class Meta:
+        model = ColorPalette
+    # end
 
+    colors = GraphQL.List(GraphQL.String)
+    def resolve_colors(self, info):
+        return json.loads(self.colors)
+    # end
+# end
+
+class UserType(DjangoObjectType):
     class Meta:
         model = User
+    # end
+
+    palettes = GraphQL.List(ColorPaletteType)
+    def resolve_palettes(self, info):
+        return ColorPalette.objects.filter(creatorID = self.id)
     # end
 # end
 
@@ -19,6 +35,7 @@ class RootQuery(GraphQL.ObjectType):
     users = GraphQL.List(UserType)
     user = GraphQL.Field(UserType)  # TODO: ()targetID param
     validateUser = GraphQL.List(GraphQL.Boolean, login = GraphQL.String(), email = GraphQL.String())  # [bool!, bool!]::[login, email]
+    getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.Int())
 
     # - resolvers - #
     def resolve_users(self, info):
@@ -69,11 +86,14 @@ class RootQuery(GraphQL.ObjectType):
 
         return result
     # end
+
+    def resolve_getColorPalletes(self, info, limit): # Get %LIMIT% random palettes
+        return ColorPalette.objects.all().order_by('?')[:limit]
+    # end
 # end
 
 # --- MUTATION --- #
 class RegisterMutation(GraphQL.Mutation):
-
     class Arguments:
         name = GraphQL.String()
         login = GraphQL.String()
@@ -100,7 +120,6 @@ class RegisterMutation(GraphQL.Mutation):
 
 
 class LoginMutation(GraphQL.Mutation):
-
     class Arguments:
         login = GraphQL.String()
         password = GraphQL.String()
