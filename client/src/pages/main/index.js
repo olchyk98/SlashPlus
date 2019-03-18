@@ -7,14 +7,31 @@ import { gql } from 'apollo-boost';
 
 import client from '../../apollo';
 import links from '../../links';
+import { constructClassName } from '../../utils';
 
-class PalettesItem extends PureComponent {
+class PalettesItem extends Component {
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			focusIN: null
+		}
+	}
+
 	render() {
 		return(
-			<div className="rn-sections-item-palette">
+			<div className={constructClassName({
+				"rn-sections-item-palette": true,
+				"infocus": this.props.inFocus
+			})} onMouseEnter={ this.props.setFocus }>
 				{
 					this.props.colors.map((session, index) => (
-						<div key={ index } style={{ background: session }} />
+						<div
+							key={ index }
+							style={{ background: session }}
+							className={ (this.state.focusIN !== index) ? "" : "infocus" }
+							onMouseEnter={ () => this.setState({ focusIN: index }) }
+						/>
 					))
 				}
 			</div>
@@ -35,10 +52,10 @@ class Palettes extends PureComponent {
 				<div className="rn-sections-item-content grid">
 					{
 						(this.props.palettes) ? (
-							this.props.palettes.map((io) => (
+							this.props.palettes.map(({ id, colors }) => (
 								<PalettesItem
-									key={ io.id }
-									colors={ io.colors }
+									key={ id }
+									colors={ colors }
 								/>
 							))
 						) : <>Loading</>
@@ -56,15 +73,11 @@ Palettes.propTypes = {
 	])
 }
 
-class ColoursItem extends PureComponent {
-	render() {
-		return(
-			<div className="rn-sections-item-palette hov">
-				<div style={{ background: "purple" }} />
-			</div>
-		);
-	}
-}
+const ColoursItem = ({ color }) => (
+	<div className="rn-sections-item-palette hov">
+		<div style={{ background: color }} />
+	</div>
+)
 
 class Colours extends PureComponent {
 	render() {
@@ -73,23 +86,32 @@ class Colours extends PureComponent {
 				<Link to={ "/" } className="rn-sections-item-title">Colours</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content grid">
-					<ColoursItem />
-					<ColoursItem />
-					<ColoursItem />
-					<ColoursItem />
+					{
+						(this.props.colors) ? (
+							this.props.colors.map(({ id, color }) => (
+								<ColoursItem
+									key={ id }
+									color={ color }
+								/>
+							))
+						) : <>Loading</>
+					}
 				</div>
 			</article>
 		);
 	}
 }
 
-class FontsItem extends PureComponent {
-	render() {
-		return(
-			<button className="rn-sections-item-content-font definp" style={{ fontFamily: "Lato" }}>Lato</button>
-		);
-	}
+Colours.propTypes = {
+	colors: PropTypes.oneOfType([
+		PropTypes.array,
+		PropTypes.bool
+	])
 }
+
+const FontsItem = ({ font, name }) => (
+	<button className="rn-sections-item-content-font definp" style={{ fontFamily: font }}>{ name }</button>
+)
 
 class Fonts extends PureComponent {
 	render() {
@@ -98,13 +120,28 @@ class Fonts extends PureComponent {
 				<Link to={ "/" } className="rn-sections-item-title">Fonts</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content flex">
-					<FontsItem />
-					<FontsItem />
-					<FontsItem />
+					{
+						(this.props.fonts) ? (
+							this.props.fonts.map(({ id, name, fontName }) => (
+								<FontsItem
+									key={ id }
+									name={ name }
+									font={ fontName }
+								/>
+							))
+						) : <>Loading</>
+					}
 				</div>
 			</article>
 		);
 	}
+}
+
+Fonts.propTypes = {
+	fonts: PropTypes.oneOfType([
+		PropTypes.array,
+		PropTypes.bool
+	])
 }
 
 class ArticlesItem extends PureComponent {
@@ -149,29 +186,51 @@ class Hero extends Component {
 	}
 
 	// TODO: Loading placeholder
-	// TODO: Create and fetch more data
+	// DONE: Create and fetch more data
 	// TODO: Fill color palettes
 
 	componentDidMount() {
 		client.query({
 			query: gql`
-				query($palettesLimit: Int!) {
+				query($palettesLimit: Int!, $colorsLimit: Int!, $fontsLimit: Int!) {
 					getColorPalletes(limit: $palettesLimit) {
 						id,
 						colors
 					},
-					# getColors
+					getColors(limit: $colorsLimit) {
+						id,
+						color
+					},
+					getFonts(limit: $fontsLimit) {
+						id,
+						src,
+						name,
+						fontName
+					},
 				}
 			`,
 			variables: {
-				palettesLimit: 4
+				palettesLimit: 4,
+				colorsLimit: 4,
+				fontsLimit: 3
 			}
-		}).then(({ data: { getColorPalletes: a } }) => {
-			if(!a) return;
+		}).then(({ data: { getColorPalletes: a, getColors: b, getFonts: c } }) => {
+			console.log({ a, b, c });
+			if(!a || !b || !c) return;
+
+			for(let ma in c.map(io => io.src)) {
+				const _a = document.createElement('link');
+				_a.setAttribute('rel', 'stylesheet');
+				_a.setAttribute('type', 'text/css');
+				_a.setAttribute('href', ma);
+				document.head.appendChild(_a);
+			}
 
 			this.setState(() => ({
 				assets: {
-					palettes: a.map(({ id, colors }) => ({ id, colors }))
+					palettes: a.map(({ id, colors }) => ({ id, colors })),
+					colors: b.map(({ id, color }) => ({ id, color })),
+					fonts: c.map(({ id, src, name, fontName }) => ({ id, src, name, fontName }))
 				}
 			}));
 		}).catch(console.error);
@@ -185,9 +244,13 @@ class Hero extends Component {
 					palettes={ this.state.assets && this.state.assets.palettes }
 				/>
 				{/* colours */}
-				<Colours />
+				<Colours
+					colors={ this.state.assets && this.state.assets.colors }
+				/>
 				{/* fonts */}
-				<Fonts />
+				<Fonts
+					fonts={ this.state.assets && this.state.assets.fonts }
+				/>
 				{/* articles */}
 				<Articles />
 			</div>

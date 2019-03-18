@@ -17,3 +17,19 @@ class ColorPalette(models.Model):
 
 	__str__ = lambda self: self.colors[:10]
 # end
+
+class Color(models.Model):
+	creatorID = models.CharField(max_length = 20)
+	color = models.CharField(max_length = 20)
+
+	__str__ = lambda self: self.color
+# end
+
+class Font(models.Model):
+	src = models.CharField(max_length = 900)
+	name = models.CharField(max_length = 900)
+	creatorID = models.CharField(max_length = 20)
+	fontName = models.CharField(max_length = 100)
+
+	__str__ = lambda self: self.name
+# end

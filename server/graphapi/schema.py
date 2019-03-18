@@ -5,37 +5,78 @@ from graphene_django.types import DjangoObjectType
 from django.db.models import Q
 import json
 
-from .models import User, ColorPalette
+from .models import User, ColorPalette, Color, Font
 
-# --- TYPES --- #
-class ColorPaletteType(DjangoObjectType):
-    class Meta:
-        model = ColorPalette
-    # end
-
-    colors = GraphQL.List(GraphQL.String)
-    def resolve_colors(self, info):
-        return json.loads(self.colors)
+# --- SAME RESOLVERS --- #
+def model_creator_resolver(self, info):
+    try:
+        return User.objects.get(id = self.creatorID)
+    except:
+        return None
     # end
 # end
 
+
+# --- TYPES --- #
 class UserType(DjangoObjectType):
     class Meta:
         model = User
     # end
 
-    palettes = GraphQL.List(ColorPaletteType)
+    palettes = GraphQL.List(lambda: ColorPaletteType)
+    colors = GraphQL.List(lambda: ColorType)
+    fonts = GraphQL.List(lambda: FontType)
+
     def resolve_palettes(self, info):
         return ColorPalette.objects.filter(creatorID = self.id)
     # end
+
+    def resolve_colors(self, info):
+        return Color.objects.filter(creatorID = self.id)
+    # end
+
+    def resolve_fonts(self, info):
+        return Font.objects.filter(creatorID = self.id)
+    # end
+# end
+
+class ColorPaletteType(DjangoObjectType):
+    class Meta:
+        model = ColorPalette
+    # end
+
+    creator = GraphQL.Field(lambda: UserType, resolver = model_creator_resolver)
+    colors = GraphQL.List(GraphQL.String)
+
+    def resolve_colors(self, info):
+        return json.loads(self.colors)
+    # end
+# end
+
+class ColorType(DjangoObjectType):
+    class Meta:
+        model = Color
+    # end
+
+    creator = GraphQL.Field(lambda: UserType, resolver = model_creator_resolver)
+# end
+
+class FontType(DjangoObjectType):
+    class Meta:
+        model = Font
+    # end
+
+    creator = GraphQL.Field(lambda: UserType, resolver = model_creator_resolver)
 # end
 
 # --- QUERY --- #
 class RootQuery(GraphQL.ObjectType):
     users = GraphQL.List(UserType)
     user = GraphQL.Field(UserType)  # TODO: ()targetID param
-    validateUser = GraphQL.List(GraphQL.Boolean, login = GraphQL.String(), email = GraphQL.String())  # [bool!, bool!]::[login, email]
-    getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.Int())
+    validateUser = GraphQL.List(GraphQL.Boolean, login = GraphQL.String(), email = GraphQL.NonNull(GraphQL.String))  # [bool!, bool!]::[login, email]
+    getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.NonNull(GraphQL.Int))
+    getColors = GraphQL.List(ColorType, limit = GraphQL.NonNull(GraphQL.Int))
+    getFonts = GraphQL.List(FontType, limit = GraphQL.NonNull(GraphQL.Int))
 
     # - resolvers - #
     def resolve_users(self, info):
@@ -89,6 +130,14 @@ class RootQuery(GraphQL.ObjectType):
 
     def resolve_getColorPalletes(self, info, limit): # Get %LIMIT% random palettes
         return ColorPalette.objects.all().order_by('?')[:limit]
+    # end
+
+    def resolve_getColors(self, info, limit):
+        return Color.objects.all().order_by('?')[:limit]
+    # end
+
+    def resolve_getFonts(self, info, limit):
+        return Font.objects.all().order_by('?')[:limit]
     # end
 # end
 

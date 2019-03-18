@@ -61,6 +61,10 @@
 	width:100%;
 }
 
+.rn-sections-item-palette > div.infocus {
+	z-index:5;
+}
+
 .rn-sections-item-palette:not(.hov) > div:first-child {
 	border-radius:var(--brr) 0 0 var(--brr);
 }
@@ -78,7 +82,6 @@
 
 .rn-sections-item-palette:not(.hov) > div:hover {
 	border-radius:5px;
-	z-index:3;
 	transform:scale(1.15);
 }
 
