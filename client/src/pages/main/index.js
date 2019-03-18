@@ -147,14 +147,19 @@ Fonts.propTypes = {
 class ArticlesItem extends PureComponent {
 	render() {
 		return(
-			<div className="rn-sections-item-content-article">
-				<h4 className="rn-sections-item-content-article-title">Citrus Lentil Salad</h4>
+			<article className="rn-sections-item-content-article">
+				<Link className="rn-sections-item-content-article-title" to="/">{ this.props.title }</Link>
 				<p className="rn-sections-item-content-article-content">
-					Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec aliquet pharetra augue, id blandit ex mattis ac. Quisque imperdiet commodo arcu ac euismod. Mauris vitae ligula id erat tempor sodales. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+					{ this.props.content }
 				</p>
-			</div>
+			</article>
 		);
 	}
+}
+
+ArticlesItem.propTypes = {
+	title: PropTypes.string.isRequired,
+	content: PropTypes.string.isRequired
 }
 
 class Articles extends PureComponent {
@@ -164,16 +169,29 @@ class Articles extends PureComponent {
 				<Link to={ "/" } className="rn-sections-item-title">Articles</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content flex">
-					<ArticlesItem />
-					<ArticlesItem />
-					<ArticlesItem />
-					<ArticlesItem />
-					<ArticlesItem />
-					<ArticlesItem />
+					{
+						(this.props.articles) ? (
+							this.props.articles.map(({ id, previewContent, title }) => (
+								<ArticlesItem
+									key={ id }
+									id={ id }
+									content={ previewContent }
+									title={ title }
+								/>
+							))
+						) : <>Loading</>
+					}
 				</div>
 			</article>
 		);
 	}
+}
+
+Articles.propTypes = {
+	articles: PropTypes.oneOfType([
+		PropTypes.array,
+		PropTypes.bool
+	])
 }
 
 class Hero extends Component {
@@ -192,7 +210,7 @@ class Hero extends Component {
 	componentDidMount() {
 		client.query({
 			query: gql`
-				query($palettesLimit: Int!, $colorsLimit: Int!, $fontsLimit: Int!) {
+				query($palettesLimit: Int!, $colorsLimit: Int!, $fontsLimit: Int!, $articlesLimit: Int!) {
 					getColorPalletes(limit: $palettesLimit) {
 						id,
 						colors
@@ -207,17 +225,24 @@ class Hero extends Component {
 						name,
 						fontName
 					},
+					getArticles(limit: $articlesLimit) {
+						id,
+						title,
+						previewContent
+					}
 				}
 			`,
 			variables: {
 				palettesLimit: 4,
 				colorsLimit: 4,
-				fontsLimit: 3
+				fontsLimit: 3,
+				articlesLimit: 4
 			}
-		}).then(({ data: { getColorPalletes: a, getColors: b, getFonts: c } }) => {
-			console.log({ a, b, c });
-			if(!a || !b || !c) return;
+		}).then(({ data: { getColorPalletes: a, getColors: b, getFonts: c, getArticles: d } }) => {
+			// Check if all data was transported correctly
+			if(!a || !b || !c || !d) return;
 
+			// Load fonts which we will display
 			for(let ma in c.map(io => io.src)) {
 				const _a = document.createElement('link');
 				_a.setAttribute('rel', 'stylesheet');
@@ -226,11 +251,13 @@ class Hero extends Component {
 				document.head.appendChild(_a);
 			}
 
+			// Accept data
 			this.setState(() => ({
 				assets: {
 					palettes: a.map(({ id, colors }) => ({ id, colors })),
 					colors: b.map(({ id, color }) => ({ id, color })),
-					fonts: c.map(({ id, src, name, fontName }) => ({ id, src, name, fontName }))
+					fonts: c.map(({ id, src, name, fontName }) => ({ id, src, name, fontName })),
+					articles: d.map(({ id, title, previewContent }) => ({ id, title, previewContent }))
 				}
 			}));
 		}).catch(console.error);
@@ -239,20 +266,18 @@ class Hero extends Component {
 	render() {
 		return(
 			<div className="rn rn-sections">
-				{/* color palettes */}
 				<Palettes
 					palettes={ this.state.assets && this.state.assets.palettes }
 				/>
-				{/* colours */}
 				<Colours
 					colors={ this.state.assets && this.state.assets.colors }
 				/>
-				{/* fonts */}
 				<Fonts
 					fonts={ this.state.assets && this.state.assets.fonts }
 				/>
-				{/* articles */}
-				<Articles />
+				<Articles
+					articles={ this.state.assets && this.state.assets.articles }
+				/>
 			</div>
 		);
 	}

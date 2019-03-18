@@ -4,8 +4,9 @@ from graphene_django.types import DjangoObjectType
 
 from django.db.models import Q
 import json
+import re
 
-from .models import User, ColorPalette, Color, Font
+from .models import User, ColorPalette, Color, Font, Article
 
 # --- SAME RESOLVERS --- #
 def model_creator_resolver(self, info):
@@ -26,6 +27,7 @@ class UserType(DjangoObjectType):
     palettes = GraphQL.List(lambda: ColorPaletteType)
     colors = GraphQL.List(lambda: ColorType)
     fonts = GraphQL.List(lambda: FontType)
+    articles = GraphQL.List(lambda: ArticleType)
 
     def resolve_palettes(self, info):
         return ColorPalette.objects.filter(creatorID = self.id)
@@ -69,6 +71,33 @@ class FontType(DjangoObjectType):
     creator = GraphQL.Field(lambda: UserType, resolver = model_creator_resolver)
 # end
 
+class ArticleType(DjangoObjectType):
+    class Meta:
+        model = Article
+    # end
+
+    creator = GraphQL.Field(lambda: UserType, resolver = model_creator_resolver)
+    previewContent = GraphQL.String()
+
+    def resolve_previewContent(self, info):
+        limit = 300
+        content = re.sub('<[^>]*>', "", self.contentHTML)
+
+        if(len(content) > limit):
+            result = content[:limit]
+
+            # check if last symbol is not . or space
+            if(result[-1] not in [' ', '.']):
+                return result + "..."
+            else:
+                return result
+            # end
+        else:
+            return content
+        # end
+    # end
+# end
+
 # --- QUERY --- #
 class RootQuery(GraphQL.ObjectType):
     users = GraphQL.List(UserType)
@@ -77,6 +106,7 @@ class RootQuery(GraphQL.ObjectType):
     getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.NonNull(GraphQL.Int))
     getColors = GraphQL.List(ColorType, limit = GraphQL.NonNull(GraphQL.Int))
     getFonts = GraphQL.List(FontType, limit = GraphQL.NonNull(GraphQL.Int))
+    getArticles = GraphQL.List(ArticleType, limit = GraphQL.NonNull(GraphQL.Int))
 
     # - resolvers - #
     def resolve_users(self, info):
@@ -138,6 +168,10 @@ class RootQuery(GraphQL.ObjectType):
 
     def resolve_getFonts(self, info, limit):
         return Font.objects.all().order_by('?')[:limit]
+    # end
+
+    def resolve_getArticles(self, info, limit):
+        return Article.objects.all().order_by('?')[:limit]
     # end
 # end
 

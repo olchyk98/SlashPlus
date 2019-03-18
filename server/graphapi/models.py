@@ -33,3 +33,12 @@ class Font(models.Model):
 
 	__str__ = lambda self: self.name
 # end
+
+class Article(models.Model):
+	title = models.CharField(max_length = 300)
+	contentHTML = models.TextField()
+	date = models.DateField(auto_now_add = True)
+	creatorID = models.CharField(max_length = 100)
+
+	__str__ = lambda self: self.title
+# end
