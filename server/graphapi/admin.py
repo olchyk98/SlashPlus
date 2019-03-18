@@ -6,5 +6,6 @@ from .models import User, ColorPalette, Color, Font, Article
 
 admin.site.register(User)
 admin.site.register(ColorPalette)
+admin.site.register(Color)
 admin.site.register(Font)
 admin.site.register(Article)

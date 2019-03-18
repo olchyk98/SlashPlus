@@ -243,7 +243,7 @@ class Hero extends Component {
 			if(!a || !b || !c || !d) return;
 
 			// Load fonts which we will display
-			for(let ma in c.map(io => io.src)) {
+			for(let ma of c.map(io => io.src)) {
 				const _a = document.createElement('link');
 				_a.setAttribute('rel', 'stylesheet');
 				_a.setAttribute('type', 'text/css');
