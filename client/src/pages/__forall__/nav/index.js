@@ -4,6 +4,7 @@ import './main.css';
 
 import { Link } from 'react-router-dom';
 import { gql } from 'apollo-boost';
+import { connect } from 'react-redux';
 
 import { cookieControl, constructClassName } from '../../../utils';
 import links from '../../../links';
@@ -555,13 +556,21 @@ class Hero extends Component {
 	}
 
     componentDidMount() {
-        if(this.state.client) {
+        let toauth = (new URL(window.location.href)).searchParams.get('toauth') !== null;
+
+        if(toauth && !this.state.client) {
+            this.setState(() => ({
+                lginModal: true
+            }));
+        } else {
             this.checkAuth();
         }
     }
 
     checkAuth = () => {
         const reset = () => this.setState(() => ({ client: null }));
+
+        this.props.startFetch(true);
 
         client.query({
             query: gql`
@@ -573,6 +582,7 @@ class Hero extends Component {
                 }
             `
         }).then(({ data: { user: a } }) => {
+            this.props.startFetch(false);
             if(!a) return reset();
 
             this.setState(() => ({
@@ -582,6 +592,7 @@ class Hero extends Component {
                 }
             }));
         }).catch((err) => {
+            this.props.startFetch(false);
             console.error(err);
             reset();
         });
@@ -596,7 +607,7 @@ class Hero extends Component {
     				</Link>
     				<div className="rn-nav-loading">
     					{
-    						(true) ? <>/+</> : (
+    						(!this.props.fetchingData) ? <>/+</> : (
     							<ProgressRing
     								radius={ this.lCircleSize / 2 }
     								stroke={ 4 }
@@ -631,4 +642,15 @@ class Hero extends Component {
 	}
 }
 
-export default Hero;
+const mapStateToProps = ({ isFetching }) => ({
+    fetchingData: isFetching
+});
+
+const mapActionsToProps = {
+    startFetch: payload => ({ type: 'SET_FETCH_STATUS', payload })
+}
+
+export default connect(
+    mapStateToProps,
+    mapActionsToProps
+)(Hero);

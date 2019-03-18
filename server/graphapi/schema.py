@@ -192,6 +192,7 @@ class RegisterMutation(GraphQL.Mutation):
         user.login = login
         user.password = password
         user.email = email
+        user.avatar = '/media/avatars/default.svg'
 
         user.save()
 

@@ -4,6 +4,7 @@ import './main.css';
 
 import { Link } from 'react-router-dom';
 import { gql } from 'apollo-boost';
+import { connect } from 'react-redux';
 
 import client from '../../apollo';
 import links from '../../links';
@@ -208,6 +209,12 @@ class Hero extends Component {
 	// TODO: Fill color palettes
 
 	componentDidMount() {
+		this.fetchData();
+	}
+
+	fetchData = () => {
+		this.props.startFetch(true);
+
 		client.query({
 			query: gql`
 				query($palettesLimit: Int!, $colorsLimit: Int!, $fontsLimit: Int!, $articlesLimit: Int!) {
@@ -239,6 +246,7 @@ class Hero extends Component {
 				articlesLimit: 4
 			}
 		}).then(({ data: { getColorPalletes: a, getColors: b, getFonts: c, getArticles: d } }) => {
+			this.props.startFetch(false);
 			// Check if all data was transported correctly
 			if(!a || !b || !c || !d) return;
 
@@ -283,4 +291,13 @@ class Hero extends Component {
 	}
 }
 
-export default Hero;
+const mapStateToProps = () => ({});
+
+const mapActionsToProps = {
+	startFetch: payload => ({ type: 'SET_FETCH_STATUS', payload })
+}
+
+export default connect(
+	mapStateToProps,
+	mapActionsToProps
+)(Hero);
