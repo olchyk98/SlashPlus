@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import { Switch, BrowserRouter } from 'react-router-dom';
-import { Route, Redirect } from 'react-router';
+import { Route } from 'react-router';
 
 import { Provider } from 'react-redux';
 

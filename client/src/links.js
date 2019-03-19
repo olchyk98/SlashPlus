@@ -5,7 +5,7 @@ const links = {
 	},
 	"ACCOUNT_PAGE": {
 		absolute: '/u',
-		route: '/u/:id'
+		route: '/u/:login'
 	}
 }
 

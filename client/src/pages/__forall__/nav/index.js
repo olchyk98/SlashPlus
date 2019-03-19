@@ -527,7 +527,7 @@ class NavAccount extends Component {
                         <button onClick={ this.logout } className="definp btn">Logout</button>
                     )
                 }
-                <Link to="/">{ this.props.client.name }</Link>
+                <Link to={ `${ links["ACCOUNT_PAGE"].absolute }/${ this.props.client.login }` }>{ this.props.client.name }</Link>
             </div>
         );
     }
@@ -577,6 +577,7 @@ class Hero extends Component {
                 query {
                     user {
                         id,
+                        login,
                         name
                     }
                 }
@@ -588,7 +589,8 @@ class Hero extends Component {
             this.setState(() => ({
                 client: {
                     id: a.id,
-                    name: a.name
+                    name: a.name,
+                    login: a.login
                 }
             }));
         }).catch((err) => {

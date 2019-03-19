@@ -1,4 +1,4 @@
-const cookieControl =  {
+const cookieControl = {
 	set: (name, value, daysOut = 32, isObject = false) => {
 		let d = new Date();
 		d.setTime(d.getTime() + (daysOut * 24 * 60 * 60 * 1000));
@@ -7,8 +7,8 @@ const cookieControl =  {
 	},
 	get: name => {
 		const a = new RegExp(name + "=([^;]+)");
-	    const b = a.exec(document.cookie);
-	    return (b != null) ? unescape(b[1]) : null;
+		const b = a.exec(document.cookie);
+		return (b != null) ? unescape(b[1]) : null;
 	},
 	delete: name => {
 		document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
@@ -29,4 +29,13 @@ function constructClassName(state) {
 	return Object.entries(state).filter(p => p[1]).map(p => p[0]).join(' ');
 }
 
-export { cookieControl, constructClassName }
+function convertTime(type) { // 1553017480428 => 19 March, 2019 18:44
+	// TODO
+}
+
+function shortNumber(a) { // 4913 => 4.9k
+	// TODO
+	return a;
+}
+
+export { cookieControl, constructClassName, convertTime, shortNumber }
