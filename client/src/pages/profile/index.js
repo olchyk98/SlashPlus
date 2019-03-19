@@ -4,7 +4,13 @@ import './main.css';
 
 // TODO: Fix -> cannot destroy 'userid' cookie
 
+import { gql } from 'apollo-boost';
+import { connect } from 'react-redux';
+
+import api from '../../api';
+import client from '../../apollo';
 import { shortNumber } from '../../utils';
+import links from '../../links';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPalette, faFillDrip, faFont, faEnvelopeOpenText, faFileAlt } from '@fortawesome/free-solid-svg-icons';
@@ -67,41 +73,36 @@ class AccountStats extends Component {
                 title="Added colors"
                 icon={ faFillDrip }
                 icolor="red"
-                value={ shortNumber(4329) }
+                value={ shortNumber(this.props.colors) }
                 info="Added unique colors into our collection"
-
             />
             <AccountStatsCard
                 title="Added color palettes"
                 icon={ faPalette }
                 icolor="orange"
-                value={ shortNumber(49182) }
+                value={ shortNumber(this.props.palettes) }
                 info="Added unique color palettes into our collection"
-
             />
             <AccountStatsCard
                 title="Added fonts"
                 icon={ faFont }
                 icolor="#30E7ED"
-                value={ shortNumber(4441) }
+                value={ shortNumber(this.props.fonts) }
                 info="Added unique fonts into our collection"
-
             />
             <AccountStatsCard
                 title="Wrote articles"
-                icon={ faEnvelopeOpenText }
+                icon={ faFileAlt }
                 icolor="#C09268"
-                value={ shortNumber(435511) }
+                value={ shortNumber(this.props.articles) }
                 info="Submited articles"
-
             />
             <AccountStatsCard
-                title="Added articles"
-                icon={ faFileAlt }
+                title="Verified articles"
+                icon={ faEnvelopeOpenText }
                 icolor="rebeccapurple"
-                value={ shortNumber(414) }
-                info="Accepted articles by this user"
-
+                value={ shortNumber(this.props.acceptedArticles) }
+                info="Articles by this user that can be displayed on the main page"
             />
             </div>
         );
@@ -113,8 +114,49 @@ class Hero extends Component {
         super(props);
 
         this.state = {
-            stage: "MAIN_STAGE" // MAIN_STAGE
+            user: false
         }
+    }
+
+    componentDidMount() {
+        this.fetchUser();
+    }
+
+    fetchUser = () => {
+        let a = this.props.match.params.login;
+
+        this.props.startFetch(true);
+
+        client.query({
+            query: gql`
+                query($targetLogin: String) {
+                    user(targetLogin: $targetLogin) {
+                        id,
+                        avatar,
+                        name,
+                        permission,
+                        colorsInt,
+                        fontsInt,
+                        articlesInt,
+                        articlesAcceptedInt,
+                        palettesInt
+                    }
+                }
+            `,
+            variables: {
+                targetLogin: a || null
+            }
+        }).then(({ data: { user: a } }) => {
+            this.props.startFetch(false);
+            if(!a) return this.props.history.push(links["HOME_PAGE"].absolute);
+
+            this.setState(() => ({
+                user: a
+            }))
+        }).catch((err) => {
+            console.error(err);
+            this.props.startFetch(false);
+        });
     }
 
     render() {
@@ -122,15 +164,30 @@ class Hero extends Component {
             <div className="rn rn-account">
                 <header className="rn-account-header">
                     <div className="rn-account-header-avatar">
-                        <img src={ image } alt="user" />
+                        <img src={ api.storage + this.state.user.avatar } alt="user" />
                     </div>
-                    <h2 className="rn-account-header-name">Oles Odynets</h2>
-                    <p className="rn-account-header-status">user</p>
+                    <h2 className="rn-account-header-name">{ this.state.user.name }</h2>
+                    <p className="rn-account-header-status">{ this.state.user.permission }</p>
                 </header>
-                <AccountStats />
+                <AccountStats
+                    colors={ this.state.user.colorsInt }
+                    fonts={ this.state.user.fontsInt }
+                    palettes={ this.state.user.palettesInt }
+                    articles={ this.state.user.articlesInt }
+                    acceptedArticles={ this.state.user.articlesAcceptedInt }
+                />
             </div>
         );
     }
 }
 
-export default Hero;
+const mapStateToProps = () => ({});
+
+const mapActionsToProps = {
+	startFetch: payload => ({ type: 'SET_FETCH_STATUS', payload })
+}
+
+export default connect(
+	mapStateToProps,
+	mapActionsToProps
+)(Hero);

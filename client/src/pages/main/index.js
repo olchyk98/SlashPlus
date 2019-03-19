@@ -205,8 +205,6 @@ class Hero extends Component {
 	}
 
 	// TODO: Loading placeholder
-	// DONE: Create and fetch more data
-	// TODO: Fill color palettes
 
 	componentDidMount() {
 		this.fetchData();
@@ -248,7 +246,7 @@ class Hero extends Component {
 		}).then(({ data: { getColorPalletes: a, getColors: b, getFonts: c, getArticles: d } }) => {
 			this.props.startFetch(false);
 			// Check if all data was transported correctly
-			if(!a || !b || !c || !d) return;
+			if(!a || !b || !c || !d) return console.error("Requested data wasn't successfully verified.");
 
 			// Load fonts which we will display
 			for(let ma of c.map(io => io.src)) {

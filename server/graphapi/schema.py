@@ -24,21 +24,30 @@ class UserType(DjangoObjectType):
         model = User
     # end
 
-    palettes = GraphQL.List(lambda: ColorPaletteType)
-    colors = GraphQL.List(lambda: ColorType)
-    fonts = GraphQL.List(lambda: FontType)
-    articles = GraphQL.List(lambda: ArticleType)
+    def findObjects(Model, count = False):
+        def resolve(self, info):
+            if(not count):
+                return Model.objects.filter(creatorID = self.id)
+            else:
+                return Model.objects.filter(creatorID = self.id).count()
+            # end
+        # end
 
-    def resolve_palettes(self, info):
-        return ColorPalette.objects.filter(creatorID = self.id)
+        return resolve
     # end
 
-    def resolve_colors(self, info):
-        return Color.objects.filter(creatorID = self.id)
-    # end
+    palettes = GraphQL.List(lambda: ColorPaletteType, resolver = findObjects(ColorPalette, False))
+    palettesInt = GraphQL.Int(resolver = findObjects(ColorPalette, True))
+    colors = GraphQL.List(lambda: ColorType, resolver = findObjects(Color, False))
+    colorsInt = GraphQL.Int(resolver = findObjects(Color, True))
+    fonts = GraphQL.List(lambda: FontType, resolver = findObjects(Font, False))
+    fontsInt = GraphQL.Int(resolver = findObjects(Font, True))
+    articles = GraphQL.List(lambda: ArticleType, resolver = findObjects(Article, False))
+    articlesInt = GraphQL.Int(resolver = findObjects(Article, True))
+    articlesAcceptedInt = GraphQL.Int()
 
-    def resolve_fonts(self, info):
-        return Font.objects.filter(creatorID = self.id)
+    def resolve_articlesAcceptedInt(self, info):
+        return Article.objects.filter(creatorID = self.id, placeStatus = "ACCEPTED").count()
     # end
 # end
 
@@ -101,7 +110,7 @@ class ArticleType(DjangoObjectType):
 # --- QUERY --- #
 class RootQuery(GraphQL.ObjectType):
     users = GraphQL.List(UserType)
-    user = GraphQL.Field(UserType)  # TODO: ()targetID param
+    user = GraphQL.Field(UserType, targetLogin = GraphQL.String())
     validateUser = GraphQL.List(GraphQL.Boolean, login = GraphQL.String(), email = GraphQL.NonNull(GraphQL.String))  # [bool!, bool!]::[login, email]
     getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.NonNull(GraphQL.Int))
     getColors = GraphQL.List(ColorType, limit = GraphQL.NonNull(GraphQL.Int))
@@ -114,14 +123,19 @@ class RootQuery(GraphQL.ObjectType):
         return User.objects.all()
     # end
 
-    def resolve_user(self, info):
+    def resolve_user(self, info, targetLogin = None):
         uid = info.context.session.get('userid', None)
 
-        if(uid):  # return user
-            # TODO: Check if self id or target
+        if(targetLogin):
+            try:
+                user = User.objects.get(login = targetLogin)
+                return user
+            except:
+                return None
+            # end
+        elif(uid): # server own
             try:
                 user = User.objects.get(id = uid)
-
                 return user
             except:
                 info.context.session['userid'] = None  # clear auth data
@@ -167,11 +181,11 @@ class RootQuery(GraphQL.ObjectType):
     # end
 
     def resolve_getFonts(self, info, limit):
-        return Font.objects.all().order_by('?')[:limit]
+        return Font.objects.filter(placeStatus = "ACCEPTED").order_by('?')[:limit]
     # end
 
     def resolve_getArticles(self, info, limit):
-        return Article.objects.all().order_by('?')[:limit]
+        return Article.objects.filter(placeStatus = "ACCEPTED").order_by('?')[:limit]
     # end
 # end
 

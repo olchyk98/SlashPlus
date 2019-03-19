@@ -8,6 +8,7 @@ class User(models.Model):
 	password = models.CharField(max_length = 600)
 	email = models.CharField(max_length = 300)
 	avatar = models.CharField(max_length = 200)
+	permission = models.CharField(max_length = 100)
 
 	__str__ = lambda self: self.login
 # end
@@ -31,6 +32,7 @@ class Font(models.Model):
 	name = models.CharField(max_length = 900)
 	creatorID = models.CharField(max_length = 20)
 	fontName = models.CharField(max_length = 100)
+	placeStatus = models.CharField(max_length = 100)
 
 	__str__ = lambda self: self.name
 # end
@@ -40,6 +42,7 @@ class Article(models.Model):
 	contentHTML = models.TextField()
 	date = models.DateField(auto_now_add = True)
 	creatorID = models.CharField(max_length = 100)
+	placeStatus = models.CharField(max_length = 100)
 
 	__str__ = lambda self: self.title
 # end
