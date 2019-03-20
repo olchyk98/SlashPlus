@@ -36,3 +36,35 @@
 .rn-create-menu-btn:last-child {
     margin-bottom:0;
 }
+
+.rn-create-article-cpicker {
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:20px;
+    box-shadow:0px 0px 15px -4px rgba(0, 0, 0, .1)!important;
+}
+
+.rn-create-article-cadd {
+    background:orange;
+    color:white;
+    border-radius:3px;
+    height:37.5px;
+    width:145px;
+    font-size:.9rem;
+    display:block;
+    margin-left:auto;
+    margin-right:auto;
+    margin-top:25px;
+}
+
+.rn-create-article-error {
+    text-align:center;
+}
+
+.rn-create-article-error.error {
+    color:red;
+}
+
+.rn-create-article-error.success {
+    color:green;
+}

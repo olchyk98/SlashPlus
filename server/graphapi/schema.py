@@ -201,17 +201,16 @@ class RegisterMutation(GraphQL.Mutation):
     Output = UserType
 
     def mutate(self, info, login, password, name, email):
-        user = User()
-        user.name = name
-        user.login = login
-        user.password = password
-        user.email = email
-        user.avatar = '/media/avatars/default.svg'
-
+        user = User(
+            name = name,
+            login = login,
+            password = password,
+            email = email,
+            avatar = '/media/avatars/default.svg'
+        )
         user.save()
 
         info.context.session['userid'] = user.id
-
         return user
     # end
 # end
@@ -251,7 +250,6 @@ class LogoutMutation(GraphQL.Mutation):
                 return user
             except:
                 info.context.session['userid'] = None
-
                 return None
             # end
         else:
@@ -260,10 +258,36 @@ class LogoutMutation(GraphQL.Mutation):
     # end
 # end
 
+class AddColorMutation(GraphQL.Mutation):
+    class Arguments:
+        color = GraphQL.NonNull(GraphQL.String)
+    # end
+
+    Output = ColorType
+
+    def mutate(self, info, color):
+        cid = info.context.session.get('userid', None)
+
+        if(not cid): return None
+
+        # Check if color is already in the database
+        try:
+            _color = Color.objects.get(color = color) # Casts an error if color wasn't found
+            return None
+        except:
+            _color = Color(color = color, creatorID = cid)
+            _color.save()
+
+            return _color
+        # end
+    # end
+# end
+
 class RootMutation(GraphQL.ObjectType):
     registerUser = RegisterMutation.Field()
     loginUser = LoginMutation.Field()
     logout = LogoutMutation.Field()
+    addColor = AddColorMutation.Field()
 # end
 
 
