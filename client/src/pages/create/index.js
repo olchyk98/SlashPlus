@@ -135,9 +135,60 @@ class AddColor extends Component {
     }
 }
 class AddPalette extends PureComponent {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            palette: [null, null],
+            currCol: "#333",
+            isSubmitting: false,
+            selectedIndex: 0
+        }
+    }
+
+    pushColor = () => {
+        const a = Array.from(this.state.palette);
+        a[this.state.selectedIndex] = this.state.currCol;
+
+        this.setState(() => ({
+            palette: a
+        }));
+    }
+
+    addPalette = () => {
+        // TODO
+    }
+
     render() {
         return(
-            null
+            <>
+                <ChromePicker
+                    className="rn-create-article-cpicker"
+                    color={ this.state.currCol }
+                    onChange={ ({ hex: a }) => this.setState({ currCol: a }) }
+                />
+                <button className="rn-create-palette-cpush definp btn" onClick={ this.pushColor }>Push</button>
+
+                <div className="rn-create-palette">
+                    {
+                        this.state.palette.map((session, index) => (
+                            <button
+                                key={ index }
+                                className={constructClassName({
+                                    "rn-create-palette-item definp btn": true,
+                                    "selected": this.state.selectedIndex === index
+                                })}
+                                onClick={ () => this.setState({ selectedIndex: index }) }
+                                style={{
+                                    background: session
+                                }}
+                            />
+                        ))
+                    }
+                    <button className="rn-create-palette-item definp btn">+</button>
+                </div>
+                <button disabled={ this.state.isSubmitting } onClick={ this.addPalette } className="rn-create-article-cadd definp btn">Submit</button>
+            </>
         );
     }
 }
@@ -162,7 +213,7 @@ class Hero extends Component {
         let stageP = {
             "article": "ADD_ARTICLE",
             "font": "ADD_FONT",
-            "palette": "ADD_ARTICLE",
+            "palette": "ADD_PALETTE",
             "color": "ADD_COLOR"
         }[ this.props.match.params.part ]
 
