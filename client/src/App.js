@@ -8,6 +8,7 @@ import { Provider } from 'react-redux';
 // Pages
 import Main from './pages/main';
 import Profile from './pages/profile';
+import Create from './pages/create';
 
 // Stuff
 import Navigation from './pages/__forall__/nav';
@@ -46,9 +47,17 @@ class App extends Component {
                         <Navigation />
                         <Switch>
                             <Route path={ links["HOME_PAGE"].route } exact component={ Main } />
-                            <ProtectedRoute
+							<ProtectedRoute
                                 path={ links["ACCOUNT_PAGE"].route }
                                 component={ Profile }
+                                redirect={ Main }
+                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
+                                condition={ this.clientID }
+                                exact
+                            />
+							<ProtectedRoute
+                                path={ links["CREATE_PAGE"].route }
+                                component={ Create }
                                 redirect={ Main }
                                 redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
                                 condition={ this.clientID }

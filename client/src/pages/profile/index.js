@@ -3,19 +3,19 @@ import PropTypes from 'prop-types';
 import './main.css';
 
 // TODO: Fix -> cannot destroy 'userid' cookie
+// TODO: ShortNumber
 
 import { gql } from 'apollo-boost';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import api from '../../api';
 import client from '../../apollo';
-import { shortNumber } from '../../utils';
+import { shortNumber, cookieControl } from '../../utils';
 import links from '../../links';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPalette, faFillDrip, faFont, faEnvelopeOpenText, faFileAlt } from '@fortawesome/free-solid-svg-icons';
-
-const image = "https://www.w3schools.com/w3css/img_lights.jpg";
 
 class AccountStatsCardIcon extends PureComponent {
     render() {
@@ -116,6 +116,8 @@ class Hero extends Component {
         this.state = {
             user: false
         }
+
+        this.clientID = cookieControl.get("userid") || null;
     }
 
     componentDidMount() {
@@ -168,6 +170,13 @@ class Hero extends Component {
                     </div>
                     <h2 className="rn-account-header-name">{ this.state.user.name }</h2>
                     <p className="rn-account-header-status">{ this.state.user.permission }</p>
+                    {
+                        (this.state.user.id !== cookieControl.get("userid")) ? null : (
+                            <Link to={ links["CREATE_PAGE"].absolute } className="rn-account-header-newpost definp btn">
+                                Add a new asset
+                            </Link>
+                        )
+                    }
                 </header>
                 <AccountStats
                     colors={ this.state.user.colorsInt }

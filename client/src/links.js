@@ -5,7 +5,11 @@ const links = {
 	},
 	"ACCOUNT_PAGE": {
 		absolute: '/u',
-		route: '/u/:login'
+		route: '/u/:login?'
+	},
+	"CREATE_PAGE": {
+		absolute: '/new',
+		route: '/new/:part?'
 	}
 }
 

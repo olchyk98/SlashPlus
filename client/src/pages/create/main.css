@@ -1,0 +1,38 @@
+.rn-create-menu {
+    margin-top:10px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    margin-left:auto;
+    margin-right:auto;
+    width:300px;
+    position:relative;
+}
+
+.rn-create-menu-btn {
+    --margin:7.5px;
+
+    color:rgba(0, 0, 0, .85);
+    background:white;
+    border-radius:5px;
+    box-shadow:0px 0px 15px -7.5px rgba(0, 0, 0, .15);
+    border:1px solid rgba(0, 0, 0, .01);
+    height:45px;
+    font-family:"Quicksand";
+    width:100%;
+    margin-top:var(--margin);
+    margin-bottom:var(--margin);
+    transition:.15s ease-in-out;
+}
+
+.rn-create-menu-btn:hover {
+    background:#f6fbfe;
+}
+
+.rn-create-menu-btn:first-child {
+    margin-top:0;
+}
+
+.rn-create-menu-btn:last-child {
+    margin-bottom:0;
+}
