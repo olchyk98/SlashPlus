@@ -123,7 +123,7 @@ class AddColor extends Component {
                 {
                     (!this.state.message.active) ? null : (
                         <p className={constructClassName({
-                            "rn-create-article-error": true,
+                            "rn-create-error": true,
                             "error": this.state.message.isError,
                             "success": !this.state.message.isError
                         })}>{ this.state.message.message }</p>
@@ -142,8 +142,34 @@ class AddPalette extends PureComponent {
             palette: [null, null],
             currCol: "#333",
             isSubmitting: false,
-            selectedIndex: 0
+            selectedIndex: 0,
+            message: {
+                active: false,
+                message: "",
+                isError: false
+            }
         }
+
+        this.maxColors = 6;
+    }
+
+    castMessage = (active = false, message = "", isError = false) => {
+        this.setState(() => ({
+            message: {
+                active,
+                message,
+                isError
+            }
+        }));
+    }
+
+    addColor = () => {
+        let a = this.state.palette;
+        if(a.length > this.maxColors) return;
+
+        this.setState(() => ({
+            palette: a.concat(null)
+        }));
     }
 
     pushColor = () => {
@@ -156,7 +182,35 @@ class AddPalette extends PureComponent {
     }
 
     addPalette = () => {
-        // TODO
+        if(this.state.isSubmitting) return;
+
+        // Check if all cells are filled
+        const a = Array.from(this.state.colorPalette);
+        if(a.filter(io => io).length !== a.length) return;
+
+        // ...
+        client.mutate({
+            mutation: gql`
+                mutation($colors: Array!) {
+                    addPalette(colors: $colors) {
+                        id
+                    }
+                }
+            `,
+            variables: {
+                colors: a
+            }
+        }).then(({ data: { addPalette: a } }) => {
+            if(!a) {
+                this.castMessage(true, "Something went wrong", true);
+                return;
+            }
+
+            this.castMessage(true, "Our collections was successfully updated. Thanks!", false)
+        }).catch((err) => {
+            console.error(err);
+            this.castMessage(true, "Something went wrong", true);
+        });
     }
 
     render() {
@@ -185,8 +239,21 @@ class AddPalette extends PureComponent {
                             />
                         ))
                     }
-                    <button className="rn-create-palette-item definp btn">+</button>
+                    {
+                        (this.state.palette.length <= this.maxColors) ? (
+                            <button className="rn-create-palette-item definp btn" onClick={ this.addColor }>+</button>
+                        ) : null
+                    }
                 </div>
+                {
+                    (!this.state.message.active) ? null : (
+                        <p className={constructClassName({
+                            "rn-create-error": true,
+                            "error": this.state.message.isError,
+                            "success": !this.state.message.isError
+                        })}>{ this.state.message.message }</p>
+                    )
+                }
                 <button disabled={ this.state.isSubmitting } onClick={ this.addPalette } className="rn-create-article-cadd definp btn">Submit</button>
             </>
         );

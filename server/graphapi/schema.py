@@ -190,104 +190,124 @@ class RootQuery(GraphQL.ObjectType):
 # end
 
 # --- MUTATION --- #
-class RegisterMutation(GraphQL.Mutation):
-    class Arguments:
-        name = GraphQL.String()
-        login = GraphQL.String()
-        password = GraphQL.String()
-        email = GraphQL.String()
-    # end
+class RootMutation(GraphQL.ObjectType):
+    class RegisterMutation(GraphQL.Mutation):
+        class Arguments:
+            name = GraphQL.NonNull(GraphQL.String)
+            login = GraphQL.NonNull(GraphQL.String)
+            password = GraphQL.NonNull(GraphQL.String)
+            email = GraphQL.NonNull(GraphQL.String)
+        # end
 
-    Output = UserType
+        Output = UserType
 
-    def mutate(self, info, login, password, name, email):
-        user = User(
-            name = name,
-            login = login,
-            password = password,
-            email = email,
-            avatar = '/media/avatars/default.svg'
-        )
-        user.save()
+        def mutate(self, info, login, password, name, email):
+            user = User(
+                name = name,
+                login = login,
+                password = password,
+                email = email,
+                avatar = '/media/avatars/default.svg'
+            )
+            user.save()
 
-        info.context.session['userid'] = user.id
-        return user
-    # end
-# end
-
-
-class LoginMutation(GraphQL.Mutation):
-    class Arguments:
-        login = GraphQL.String()
-        password = GraphQL.String()
-    # end
-
-    Output = UserType
-
-    def mutate(self, info, login, password):
-        try:
-            user = User.objects.get(login = login, password = password)
             info.context.session['userid'] = user.id
-
             return user
-        except:
-            return None
         # end
     # end
-# end
 
-class LogoutMutation(GraphQL.Mutation):
-    Output = UserType
 
-    def mutate(self, info):
-        id = info.context.session.get('userid', None)
+    class LoginMutation(GraphQL.Mutation):
+        class Arguments:
+            login = GraphQL.NonNull(GraphQL.String)
+            password = GraphQL.NonNull(GraphQL.String)
+        # end
 
-        if(id):
+        Output = UserType
+
+        def mutate(self, info, login, password):
             try:
-                user = User.objects.get(id = id)
-                info.context.session['userid'] = None
+                user = User.objects.get(login = login, password = password)
+                info.context.session['userid'] = user.id
 
                 return user
             except:
-                info.context.session['userid'] = None
                 return None
             # end
-        else:
-            return None
         # end
     # end
-# end
 
-class AddColorMutation(GraphQL.Mutation):
-    class Arguments:
-        color = GraphQL.NonNull(GraphQL.String)
-    # end
+    class LogoutMutation(GraphQL.Mutation):
+        Output = UserType
 
-    Output = ColorType
+        def mutate(self, info):
+            id = info.context.session.get('userid', None)
 
-    def mutate(self, info, color):
-        cid = info.context.session.get('userid', None)
+            if(id):
+                try:
+                    user = User.objects.get(id = id)
+                    info.context.session['userid'] = None
 
-        if(not cid): return None
-
-        # Check if color is already in the database
-        try:
-            _color = Color.objects.get(color = color) # Casts an error if color wasn't found
-            return None
-        except:
-            _color = Color(color = color, creatorID = cid)
-            _color.save()
-
-            return _color
+                    return user
+                except:
+                    info.context.session['userid'] = None
+                    return None
+                # end
+            else:
+                return None
+            # end
         # end
     # end
-# end
 
-class RootMutation(GraphQL.ObjectType):
+    class AddColorMutation(GraphQL.Mutation):
+        class Arguments:
+            color = GraphQL.NonNull(GraphQL.String)
+        # end
+
+        Output = ColorType
+
+        def mutate(self, info, color):
+            cid = info.context.session.get('userid', None)
+
+            if(not cid): return None
+
+            # Check if color is already in the database
+            try:
+                _color = Color.objects.get(color = color) # Casts an error if color wasn't found
+                return None
+            except:
+                _color = Color(color = color, creatorID = cid)
+                _color.save()
+
+                return _color
+            # end
+        # end
+    # end
+
+    class AddPaletteMutation(GraphQL.Mutation):
+        class Arguments:
+            colors = GraphQL.NonNull(GraphQL.List(GraphQL.String))
+        # end
+
+        Output = ColorPaletteType
+
+        def mutate(self, info, colors):
+            cid = info.context.session.get('userid', None)
+
+            if(not cid): return None
+
+            palette = ColorPalette(colors = json.dumps(colors)) # WARNING: 'colors' -=> JSON (str)
+            palette.save()
+
+            return palette
+        # end
+    # end
+
     registerUser = RegisterMutation.Field()
     loginUser = LoginMutation.Field()
     logout = LogoutMutation.Field()
     addColor = AddColorMutation.Field()
+    addPalette = AddPaletteMutation.Field()
 # end
 
 
