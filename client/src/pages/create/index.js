@@ -185,13 +185,13 @@ class AddPalette extends PureComponent {
         if(this.state.isSubmitting) return;
 
         // Check if all cells are filled
-        const a = Array.from(this.state.colorPalette);
+        const a = Array.from(this.state.palette);
         if(a.filter(io => io).length !== a.length) return;
 
         // ...
         client.mutate({
             mutation: gql`
-                mutation($colors: Array!) {
+                mutation($colors: [String]!) {
                     addPalette(colors: $colors) {
                         id
                     }

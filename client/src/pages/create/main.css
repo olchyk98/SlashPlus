@@ -57,15 +57,15 @@
     margin-top:25px;
 }
 
-.rn-create-article-error {
+.rn-create-error {
     text-align:center;
 }
 
-.rn-create-article-error.error {
+.rn-create-error.error {
     color:red;
 }
 
-.rn-create-article-error.success {
+.rn-create-error.success {
     color:green;
 }
 
