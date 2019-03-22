@@ -188,6 +188,11 @@ class RootQuery(GraphQL.ObjectType):
         return Article.objects.filter(placeStatus = "ACCEPTED").order_by('?')[:limit]
     # end
 # end
+class Upload(GraphQL.Scalar):
+    def serialize(self):
+        pass
+    # end
+# end
 
 # --- MUTATION --- #
 class RootMutation(GraphQL.ObjectType):
@@ -303,11 +308,29 @@ class RootMutation(GraphQL.ObjectType):
         # end
     # end
 
+    class AddFontMutation(GraphQL.Mutation):
+        class Input:
+            file = Upload()
+            # name = GraphQL.NonNull(GraphQL.String)
+            # execName = GraphQL.NonNull(GraphQL.String)
+        # end
+
+        Output = FontType
+
+        @staticmethod
+        def mutate(_, cls):
+            for filename in cls.context.FILES:
+                file = cls.context.FILES[filename]
+
+                print(file)
+    # end
+
     registerUser = RegisterMutation.Field()
     loginUser = LoginMutation.Field()
     logout = LogoutMutation.Field()
     addColor = AddColorMutation.Field()
     addPalette = AddPaletteMutation.Field()
+    addFont = AddFontMutation.Field()
 # end
 
 

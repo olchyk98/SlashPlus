@@ -39,10 +39,35 @@ class Menu extends PureComponent {
         );
     }
 }
-class AddFont extends PureComponent {
+class AddFont extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            file: null
+        }
+    }
+
+    addFont = () => {
+        client.mutate({
+            mutation: gql`
+                mutation($file: Upload) {
+                    addFont(file: $file) {
+                        id
+                    }
+                }
+            `,
+            variables: {
+                file: this.state.file
+            }
+        }).then(console.log).catch((err) => {
+            console.log({...err});
+        });
+    }
+
     render() {
         return(
-            null
+            <input type="file" onChange={ ({ target: { files: [file] } }) => this.setState({ file }, this.addFont) } />
         );
     }
 }
@@ -188,6 +213,8 @@ class AddPalette extends PureComponent {
         const a = Array.from(this.state.palette);
         if(a.filter(io => io).length !== a.length) return;
 
+        this.props.startFetch(true);
+
         // ...
         client.mutate({
             mutation: gql`
@@ -201,6 +228,7 @@ class AddPalette extends PureComponent {
                 colors: a
             }
         }).then(({ data: { addPalette: a } }) => {
+            this.props.startFetch(false);
             if(!a) {
                 this.castMessage(true, "Something went wrong", true);
                 return;
@@ -209,6 +237,7 @@ class AddPalette extends PureComponent {
             this.castMessage(true, "Our collections was successfully updated. Thanks!", false)
         }).catch((err) => {
             console.error(err);
+            this.props.startFetch(false);
             this.castMessage(true, "Something went wrong", true);
         });
     }
