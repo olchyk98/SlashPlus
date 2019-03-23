@@ -323,24 +323,23 @@ class RootMutation(GraphQL.ObjectType):
     # end
 
     class AddFontMutation(GraphQL.Mutation):
-        class Input: # TRY: Input
-            file = Upload()
+        class Arguments:
+            Ffile = Upload(required = True)
             # name = GraphQL.NonNull(GraphQL.String)
             # execName = GraphQL.NonNull(GraphQL.String)
         # end
 
         Output = FontType
 
-        @classmethod
-        def mutate(self, root, info, **input):
-            print(input.get('file'))
-            with NamedTemporaryFile(delete=False) as tmp:
-                for chunk in input.get('file').chunks():
-                    tmp.write(chunk)
-                # end
-                image_file = tmp.name
-                print(image_file)
-            # end
+        def mutate(self, info, Ffile):
+            print(Ffile)
+            # with NamedTemporaryFile(delete=False) as tmp:
+            #     for chunk in input.get('file').chunks():
+            #         tmp.write(chunk)
+            #     # end
+            #     image_file = tmp.name
+            #     print(image_file)
+            # # end
 
             return None
         # end

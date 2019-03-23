@@ -1,6 +1,7 @@
 import { ApolloClient, ApolloLink } from 'apollo-boost';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { createUploadLink } from './li';
+// import { createUploadLink } from './li';
+import { createUploadLink } from 'apollo-upload-client';
 import { onError } from 'apollo-link-error'
 
 import api from './api';
