@@ -51,7 +51,7 @@ class AddFont extends Component {
     addFont = () => {
         client.mutate({
             mutation: gql`
-                mutation($file: Upload) {
+                mutation($file: Upload!) {
                     addFont(file: $file) {
                         id
                     }

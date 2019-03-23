@@ -1,6 +1,8 @@
 import graphene as GraphQL
 from graphql import GraphQLError
 from graphene_django.types import DjangoObjectType
+from tempfile import NamedTemporaryFile
+from graphene_file_upload.scalars import Upload
 
 from django.db.models import Q
 import json
@@ -188,11 +190,23 @@ class RootQuery(GraphQL.ObjectType):
         return Article.objects.filter(placeStatus = "ACCEPTED").order_by('?')[:limit]
     # end
 # end
-class Upload(GraphQL.Scalar):
-    def serialize(self):
-        pass
-    # end
-# end
+# class Upload(GraphQL.Scalar):
+#     @staticmethod
+#     def serialize(value):
+#         raise Exception('File upload cannot be serialized')
+#     # end
+#
+#     @staticmethod
+#     def parse_literal(node):
+#         raise Exception('No such thing as a file upload literal')
+#     # end
+#
+#     @staticmethod
+#     def parse_value(value):
+#         print(value)
+#         return value
+#     # end
+# # end
 
 # --- MUTATION --- #
 class RootMutation(GraphQL.ObjectType):
@@ -309,7 +323,7 @@ class RootMutation(GraphQL.ObjectType):
     # end
 
     class AddFontMutation(GraphQL.Mutation):
-        class Input:
+        class Input: # TRY: Input
             file = Upload()
             # name = GraphQL.NonNull(GraphQL.String)
             # execName = GraphQL.NonNull(GraphQL.String)
@@ -317,12 +331,19 @@ class RootMutation(GraphQL.ObjectType):
 
         Output = FontType
 
-        @staticmethod
-        def mutate(_, cls):
-            for filename in cls.context.FILES:
-                file = cls.context.FILES[filename]
+        @classmethod
+        def mutate(self, root, info, **input):
+            print(input.get('file'))
+            with NamedTemporaryFile(delete=False) as tmp:
+                for chunk in input.get('file').chunks():
+                    tmp.write(chunk)
+                # end
+                image_file = tmp.name
+                print(image_file)
+            # end
 
-                print(file)
+            return None
+        # end
     # end
 
     registerUser = RegisterMutation.Field()
