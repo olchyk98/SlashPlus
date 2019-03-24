@@ -98,7 +98,7 @@ class AccountStats extends Component {
                 info="Submited articles"
             />
             <AccountStatsCard
-                title="Verified articles"
+                title="Wrote verified articles"
                 icon={ faEnvelopeOpenText }
                 icolor="rebeccapurple"
                 value={ shortNumber(this.props.acceptedArticles) }

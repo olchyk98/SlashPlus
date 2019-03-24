@@ -1,0 +1,4 @@
+/media
+    - /avatars
+        -! /default.svg
+    - /fonts

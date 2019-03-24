@@ -11,7 +11,7 @@ const cookieControl = {
 		return (b != null) ? unescape(b[1]) : null;
 	},
 	delete: name => {
-		document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+		document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:01 GMT;path=/;';
 	},
 	crashCookies: () => {
 		const _a = document.cookie.split(";");

@@ -9,6 +9,14 @@ import { constructClassName } from '../../utils';
 import client from '../../apollo';
 import links from '../../links';
 
+const MessageAsset = ({ active, isError, message }) => (!active) ? null : (
+    <p className={constructClassName({
+        "rn-create-error": true,
+        "error": isError,
+        "success": !isError
+    })}>{ message }</p>
+);
+
 class Menu extends PureComponent {
     render() {
         return(
@@ -44,30 +52,108 @@ class AddFont extends Component {
         super(props);
 
         this.state = {
-            file: null
+            file: null,
+            name: null,
+            execName: null,
+            isSubmitting: false,
+            message: {
+                active: false,
+                message: "",
+                isError: false
+            }
         }
     }
 
+    castMessage = (active = false, message = "", isError = false) => {
+        this.setState(() => ({
+            message: { active, message, isError }
+        }));
+    }
+
     addFont = () => {
+        if(this.state.isSubmitting) return;
+
+        const { file, execName, name } = this.state;
+        if(
+            !file ||
+            (!execName || !execName.replace(/\s|\n/g, "")) ||
+            (!name || !name.replace(/\s|\n/g, ""))
+        ) return;
+
+        this.props.startFetch(true);
+        this.setState(() => ({
+            isSubmitting: true
+        }));
+        this.castMessage(); // remove prev message
+
         client.mutate({
             mutation: gql`
-                mutation($file: Upload!) {
-                    addFont(Ffile: $file) {
+                mutation($file: Upload!, $execName: String!, $name: String!) {
+                    addFont(file: $file, execName: $execName, name: $name) {
                         id
                     }
                 }
             `,
-            variables: {
-                file: this.state.file
+            variables: { execName, file, name }
+        }).then(({ data: { addFont: a } }) => {
+            this.props.startFetch(false);
+            this.setState(() => ({
+                isSubmitting: true
+            }));
+
+            if(!a) {
+                this.castMessage(true, "Font with that name already exists in our collection!", true);
+                return;
             }
-        }).then(console.log).catch((err) => {
-            console.log({...err});
-        });
+
+            this.castMessage(true, "New font was sended to review.", false);
+        }).catch((err) => {
+            this.props.startFetch(false);
+            this.setState(() => ({
+                isSubmitting: true
+            }));
+
+            this.castMessage(true, "Something went wrong. Please, try later.", true);
+            console.error(err);
+        })
     }
 
     render() {
         return(
-            <input type="file" onChange={ ({ target: { files: [file] } }) => this.setState({ file }, this.addFont) } />
+            <>
+                <input
+                    type="text"
+                    className="rn-create-addfont-it rn-create-addfont-name definp"
+                    placeholder="Type the font name"
+                    onChange={(e) => {
+                        e.persist();
+
+                        if(e.keyCode === 13) {
+                            e.preventDefault();
+                        } else {
+                            this.setState(() => ({
+                                name: e.target.value
+                            }));
+                        }
+                    }}
+                />
+                <div className="rn-create-addfont-it rn-create-addfont-execname">
+                    <span>Launch name for this font:</span>
+                    <input
+                        className="definp"
+                        placeholder="execfontname"
+                        onChange={ ({ target: { value: a } }) => this.setState({ execName: a }) }
+                    />
+                </div>
+                <input
+                    className="rn-create-addfont-it"
+                    type="file"
+                    accept=".ttf, .otf, .woff, .eot"
+                    onChange={ ({ target: { files: [file] } }) => (file) ? this.setState({ file }) : null }
+                />
+                <MessageAsset { ...this.state.message } />
+                <button disabled={ this.state.isSubmitting } onClick={ this.addFont } className="rn-create-article-cadd rn-create-addfont-it definp btn">Send to review</button>
+            </>
         );
     }
 }
@@ -145,15 +231,7 @@ class AddColor extends Component {
                     color={ this.state.color }
                     onChange={ ({ hex: a }) => this.setState({ color: a }) }
                 />
-                {
-                    (!this.state.message.active) ? null : (
-                        <p className={constructClassName({
-                            "rn-create-error": true,
-                            "error": this.state.message.isError,
-                            "success": !this.state.message.isError
-                        })}>{ this.state.message.message }</p>
-                    )
-                }
+                <MessageAsset { ...this.state.message } />
                 <button disabled={ this.state.isSubmitting } onClick={ this.addColor } className="rn-create-article-cadd definp btn">Add</button>
             </>
         )
@@ -274,15 +352,7 @@ class AddPalette extends PureComponent {
                         ) : null
                     }
                 </div>
-                {
-                    (!this.state.message.active) ? null : (
-                        <p className={constructClassName({
-                            "rn-create-error": true,
-                            "error": this.state.message.isError,
-                            "success": !this.state.message.isError
-                        })}>{ this.state.message.message }</p>
-                    )
-                }
+                <MessageAsset { ...this.state.message } />
                 <button disabled={ this.state.isSubmitting } onClick={ this.addPalette } className="rn-create-article-cadd definp btn">Submit</button>
             </>
         );

@@ -1,13 +1,17 @@
 import graphene as GraphQL
 from graphql import GraphQLError
 from graphene_django.types import DjangoObjectType
-from tempfile import NamedTemporaryFile
 from graphene_file_upload.scalars import Upload
 
 from django.db.models import Q
 import json
 import re
+import string
+from random import randint
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
+from django.conf import settings
 from .models import User, ColorPalette, Color, Font, Article
 
 # --- SAME RESOLVERS --- #
@@ -190,23 +194,6 @@ class RootQuery(GraphQL.ObjectType):
         return Article.objects.filter(placeStatus = "ACCEPTED").order_by('?')[:limit]
     # end
 # end
-# class Upload(GraphQL.Scalar):
-#     @staticmethod
-#     def serialize(value):
-#         raise Exception('File upload cannot be serialized')
-#     # end
-#
-#     @staticmethod
-#     def parse_literal(node):
-#         raise Exception('No such thing as a file upload literal')
-#     # end
-#
-#     @staticmethod
-#     def parse_value(value):
-#         print(value)
-#         return value
-#     # end
-# # end
 
 # --- MUTATION --- #
 class RootMutation(GraphQL.ObjectType):
@@ -324,24 +311,48 @@ class RootMutation(GraphQL.ObjectType):
 
     class AddFontMutation(GraphQL.Mutation):
         class Arguments:
-            Ffile = Upload(required = True)
-            # name = GraphQL.NonNull(GraphQL.String)
-            # execName = GraphQL.NonNull(GraphQL.String)
+            file = GraphQL.NonNull(Upload)
+            name = GraphQL.NonNull(GraphQL.String)
+            execName = GraphQL.NonNull(GraphQL.String)
         # end
 
         Output = FontType
 
-        def mutate(self, info, Ffile):
-            print(Ffile)
-            # with NamedTemporaryFile(delete=False) as tmp:
-            #     for chunk in input.get('file').chunks():
-            #         tmp.write(chunk)
-            #     # end
-            #     image_file = tmp.name
-            #     print(image_file)
-            # # end
+        def mutate(self, info, file, execName, name):
+            uid = info.context.session.get('userid', None)
 
-            return None
+            if(uid):
+                io = Font.objects.filter( Q(fontName = execName) | Q(name = name) )
+                if(len(io)): return None
+
+                def randName(length = 35):
+                    a = ""
+                    b = list(string.ascii_lowercase + string.ascii_uppercase + string.digits)
+
+                    for ma in range(length):
+                        a += b[ randint(0, len(b) - 1) ]
+                    # end
+
+                    return a
+                # end
+
+                ext = re.findall(r'[^\\]*\.(\w+)$', file.name)[0] # get file extension
+                # saves to the media folder
+                path = settings.MEDIA_URL + default_storage.save('fonts/%s_%s_%s_%s.%s' % (uid, execName, name, randName(75), ext), ContentFile(file.read()))
+
+                font = Font(
+                    src = path,
+                    name = name,
+                    creatorID = uid,
+                    fontName = execName,
+                    placeStatus = "WAITING"
+                )
+                font.save()
+
+                return font
+            else:
+                raise GraphQLError("Invalid session")
+            # end
         # end
     # end
 

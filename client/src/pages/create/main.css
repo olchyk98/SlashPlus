@@ -132,3 +132,48 @@
     transition:.1s;
     transform:scale(.95);
 }
+
+.rn-create-addfont-it {
+    margin-left:auto;
+    margin-right:auto;
+    display:block;
+    text-align:center;
+}
+
+.rn-create-addfont-name {
+    margin-top:15px;
+    margin-bottom:12.5px;
+    font-size:2.5em;
+    outline:0;
+}
+
+.rn-create-addfont-name::placeholder {
+    color:black;
+    transition:all .15s ease-in-out;
+}
+
+.rn-create-addfont-name:focus::placeholder {
+    opacity:.5;
+}
+
+.rn-create-addfont-execname {
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin-bottom:15px;
+}
+
+.rn-create-addfont-execname > * {
+    --margin:5px;
+
+    margin-left:var(--margin);
+    margin-right:var(--margin);
+}
+
+.rn-create-addfont-execname > input {
+    position:relative;
+    top:-1px;
+    padding:5px;
+    background:white;
+    border:1px solid rgba(0, 0, 0, .1);
+}
