@@ -1,13 +1,22 @@
 import React, { Component, PureComponent } from 'react';
+import { PropTypes } from 'prop-types';
 import './main.css';
 
 import { ChromePicker } from 'react-color';
 import { gql } from 'apollo-boost';
 import { connect } from 'react-redux';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faUnderline, faQuoteRight, faListUl, faListOl, faBold, faCode, faFont, faItalic } from '@fortawesome/free-solid-svg-icons';
+import { EditorState, RichUtils, AtomicBlockUtils } from 'draft-js';
+import Editor from "draft-js-plugins-editor";
+import createImagePlugin from "draft-js-image-plugin";
+import { stateFromHTML } from 'draft-js-import-html';
 
 import { constructClassName } from '../../utils';
 import client from '../../apollo';
 import links from '../../links';
+
+const imagePlugin = createImagePlugin();
 
 const MessageAsset = ({ active, isError, message }) => (!active) ? null : (
     <p className={constructClassName({
@@ -358,10 +367,208 @@ class AddPalette extends PureComponent {
         );
     }
 }
-class AddArticle extends PureComponent {
+
+const AddArticleToolsItem = ({ icon, _onClick, active }) => (
+    <button className={constructClassName({
+        "definp btn rn-create-addarticle-tools-btn": true,
+        "active": active
+    })} onMouseDown={ e => { e.preventDefault(); _onClick(e) } }>
+        <FontAwesomeIcon icon={ icon } />
+    </button>
+);
+
+AddArticleToolsItem.propTypes = {
+    icon: PropTypes.object.isRequired,
+    _onClick: PropTypes.func.isRequired,
+    active: PropTypes.bool.isRequired
+}
+
+class AddArticleTools extends PureComponent {
     render() {
         return(
-            null
+            <menu className="rn-create-addarticle-tools">
+                {
+                    [
+                        {
+                            icon: faBold,
+                            styleType: "BOLD"
+                        },
+                        {
+                            icon: faItalic,
+                            styleType: "ITALIC"
+                        },
+                        {
+                            icon: faUnderline,
+                            styleType: "UNDERLINE"
+                        },
+                        {
+                            icon: faQuoteRight,
+                            blockType: "blockquote"
+                        },
+                        {
+                            icon: faCode,
+                            blockType: "code-block"
+                        },
+                        {
+                            icon: faListUl,
+                            blockType: "unordered-list-item"
+                        },
+                        {
+                            icon: faListOl,
+                            blockType: "ordered-list-item"
+                        },
+                        {
+                            icon: faFont,
+                            blockType: "header-one"
+                        },
+                        {
+                            icon: faFont,
+                            blockType: "header-two"
+                        },
+                        {
+                            icon: faFont,
+                            blockType: "header-three"
+                        },
+                        {
+                            icon: faFont,
+                            blockType: "header-four"
+                        },
+                        {
+                            icon: faFont,
+                            blockType: "header-five"
+                        }
+                    ].map(({ icon, styleType, blockType }, index) => (
+                        <AddArticleToolsItem
+                            key={ index }
+                            icon={ icon }
+                            active={!!(
+                                (styleType && this.props.currentStyle.has(styleType)) ||
+                                (blockType && this.props.currentBlock === blockType)
+                            )}
+                            _onClick={ e => { e.preventDefault(); this.props.applyStyle(styleType || blockType) } }
+                        />
+                    ))
+                }
+            </menu>
+        );
+    }
+}
+
+class AddArticle extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            editorState: EditorState.createEmpty(),
+            currentBlock: null,
+            showPlaceholder: true
+        }
+    }
+
+    componentDidUpdate() {
+        {
+			let a = this.getEditorBlock();
+
+	        if(this.state.currentBlock !== a) {
+		    	this.setState(() => ({
+		    		currentBlock: a,
+		    		showPlaceholder: a === 'unstyled'
+		    	}));
+	    	}
+		}
+    }
+
+    getEditorBlock = () => {
+		let a = this.state.editorState;
+	    return a.getCurrentContent()
+	          .getBlockForKey(a.getSelection().getStartKey())
+	          .getType();
+	}
+
+    editText = (state = null, action = "") => {
+		if(!state && !action) throw new Error("Editor: Invalid arguments pack");
+
+		let a = {
+			"ITALIC": "toggleInlineStyle",
+			"BOLD": "toggleInlineStyle",
+			"UNDERLINE": "toggleInlineStyle",
+			"header-one": "toggleBlockType",
+			"header-two": "toggleBlockType",
+			"header-three": "toggleBlockType",
+			"header-four": "toggleBlockType",
+			"header-five": "toggleBlockType",
+			"ordered-list-item": "toggleBlockType",
+			"unordered-list-item": "toggleBlockType",
+			"code-block": "toggleBlockType",
+			"blockquote": "toggleBlockType"
+		}
+
+		if(Object.keys(a).includes(action)) {
+			state = RichUtils[a[action]](
+				this.state.editorState,
+				action
+			);
+		} else if(!state) {
+			return console.error("Editor: Invlid action");
+		}
+
+		this.setState(() => ({
+			editorState: state
+		}));
+	}
+
+    _confirmMedia = () => { // TODO: <mark /> block, insert image, block split by an image
+         const { editorState } = this.state;
+         const contentState = editorState.getCurrentContent();
+         const contentStateWithEntity = contentState.createEntity(
+           'image',
+           'IMMUTABLE',
+           {
+               url: "https://www.thespruce.com/thmb/YsYL-pB75OrpblFT1THFBe11X5A=/450x0/filters:no_upscale():max_bytes(150000):strip_icc()/frigatebird-5b045e571d640400376297a4.jpg"
+           }
+         );
+         const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
+         const newEditorState = EditorState.set(
+           editorState,
+           {currentContent: contentStateWithEntity}
+         );
+         this.setState({
+           editorState: AtomicBlockUtils.insertAtomicBlock(
+             newEditorState,
+             entityKey,
+             ' '
+           )
+         });
+       }
+
+    render() {
+        return(
+            <div className="rn-create-addarticle">
+                <AddArticleTools
+                    applyStyle={ style => this.editText(null, style) }
+                    currentBlock={ this.state.currentBlock }
+                    currentStyle={ this.state.editorState.getCurrentInlineStyle() }
+                />
+                <div className="rn-create-addarticle-workspace">
+                    <Editor
+                        onChange={ this.editText }
+                        editorState={ this.state.editorState }
+                        placeholder={ (this.state.placeholder) ? "Start typing..." : "" }
+                        plugins={[ imagePlugin ]}
+                        ref={ ref => this.editorMat = ref }
+                        blockStyleFn={a => {
+                            let b = a.getType();
+
+                            switch(b) {
+                                case 'blockquote': return "rn-create-addarticle-workspace__inc__blockquote";
+                                case 'code-block': return "rn-create-addarticle-workspace__inc__code";
+                                case 'header-one': return "rn-create-addarticle-workspace__inc__title";
+                                default:break;
+                            }
+                        }}
+                    />
+                </div>
+            </div>
         );
     }
 }

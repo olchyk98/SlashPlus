@@ -177,3 +177,114 @@
     background:white;
     border:1px solid rgba(0, 0, 0, .1);
 }
+
+.rn-create-addarticle {
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    position:relative;
+}
+
+.rn-create-addarticle-tools {
+    --padding:15px;
+
+    overflow:scroll;
+    padding-left:var(--padding);
+    padding-right:var(--padding);
+    width:calc(100% - var(--padding) * 2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-shrink:0;
+    height:40px;
+    background:white;
+}
+
+.rn-create-addarticle-tools-btn {
+    --size:30px;
+    --margin:10px;
+
+    width:var(--size);
+    height:var(--size);
+    border-radius:2.5px;
+    font-size:.95rem;
+    color:rgba(0, 0, 0, .75);
+    transition:.25s;
+    margin-left:var(--margin);
+    margin-right:var(--margin);
+}
+
+.rn-create-addarticle-tools-btn:hover {
+    background:rgba(0, 0, 255, .02);
+}
+
+.rn-create-addarticle-tools-btn.active {
+    background:rgba(0, 0, 255, .075);
+    color:blue;
+}
+
+.rn-create-addarticle-workspace {
+    height:100%;
+    flex-shrink:1;
+    overflow:scroll;
+    width:100%;
+    background:white;
+    justify-content:center;
+    display:flex;
+}
+
+.rn-create-addarticle-workspace > * {
+    width:50%;
+    font-family:"Roboto";
+}
+
+.rn-create-addarticle-workspace__inc__title {
+    text-align:center;
+}
+
+.rn-create-addarticle-workspace__inc__blockquote {
+    --padding:15px;
+
+    padding-top:var(--padding);
+    padding-bottom:var(--padding);
+    width:100%;
+    position:relative;
+}
+
+.rn-create-addarticle-workspace__inc__blockquote:before {
+    content:'';
+    position:absolute;
+    top:0;
+    left:-13px;
+    height:100%;
+    width:2.5px;
+    background:orange;
+    border-radius:2.5px;
+}
+
+.rn-create-addarticle-workspace__inc__code {
+    --padding:12.5px;
+    --margin:15px;
+
+    padding-left:var(--padding);
+    padding-right:var(--padding);
+    width:calc(100% - 15px);
+    background:#eff0f1;
+    overflow:scroll;
+    border-radius:2.5px;
+    margin:0;
+    font-family:Consolas, Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace, sans-serif;
+    font-size:.75rem;
+    white-space:wrap;
+    position:relative;
+}
+
+.rn-create-addarticle-workspace__inc__code:first-child {
+    padding-top:var(--margin);
+}
+
+.rn-create-addarticle-workspace__inc__code:last-child {
+    padding-bottom:var(--margin);
+}
