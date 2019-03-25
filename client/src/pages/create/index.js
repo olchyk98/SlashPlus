@@ -10,7 +10,7 @@ import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUnderline, faQuoteRight, faListUl, faListOl, faBold, faCode, faFont, faItalic, faFileImage, faTimes, faHeading } from '@fortawesome/free-solid-svg-icons';
 import { EditorState, RichUtils, AtomicBlockUtils } from 'draft-js';
-import { stateFromHTML } from 'draft-js-import-html';
+import { stateToHTML } from 'draft-js-export-html';
 
 import Editor, { composeDecorators } from "draft-js-plugins-editor";
 import createImagePlugin from 'draft-js-image-plugin';
@@ -702,13 +702,33 @@ class AddArticle extends Component {
             !this.state.editorState.getCurrentContent().hasText()
         ) return;
 
-        // client.query({
-        //     query: gql`
-        //
-        //     `
-        // }).then(({ add }) => {
-        //
-        // })
+        this.props.startFetch(true);
+
+        client.mutate({
+            mutation: gql`
+                mutation($title: String!, $contentHTML: String!) {
+                    addArticle(title: $title, contentHTML: $contentHTML) {
+                        id
+                    }
+                }
+            `,
+            variables: {
+                title: this.state.articleTitle,
+                contentHTML: stateToHTML(this.state.editorState.getCurrentContent())
+            }
+        }).then(({ data: { addArticle: a } }) => {
+            this.props.startFetch(false);
+
+            if(!a) {
+                alert("An error occured, please try to reload the page.");
+                return;
+            }
+
+            this.props.pushHistory(links["HOME_PAGE"].absolute);
+        }).catch((err) => {
+            this.props.startFetch(false);
+            console.error(err);
+        });
     }
 
     render() {
@@ -807,10 +827,13 @@ class Hero extends Component {
                     {
                         "SELECT_PART": <Menu forward={ stage => this.forwardStage(stage) } />,
                         "ADD_FONT": <AddFont startFetch={ this.props.startFetch } />,
-                        "ADD_ARTICLE": <AddArticle startFetch={ this.props.startFetch } />,
+                        "ADD_ARTICLE": <AddArticle
+                            startFetch={ this.props.startFetch }
+                            pushHistory={ this.props.history.push }
+                        />,
                         "ADD_PALETTE": <AddPalette startFetch={ this.props.startFetch } />,
                         "ADD_COLOR": <AddColor startFetch={ this.props.startFetch } />
-                    }[this.state.stage] || (console.error("Invalid Stage") || null) // DEBUG
+                    }[this.state.stage] || null
                 }
             </div>
         );

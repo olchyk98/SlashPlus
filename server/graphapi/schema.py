@@ -356,12 +356,38 @@ class RootMutation(GraphQL.ObjectType):
         # end
     # end
 
+    class AddArticleMutation(GraphQL.Mutation):
+        class Arguments:
+            title = GraphQL.NonNull(GraphQL.String)
+            contentHTML = GraphQL.NonNull(GraphQL.String)
+        # end
+
+        Output = ArticleType
+
+        def mutate(self, info, title, contentHTML):
+            uid = info.context.session.get('userid', None)
+
+            if(not uid): raise GraphQLError("Invalid session")
+
+            art = Article()
+            art.title = title
+            art.contentHTML = contentHTML
+            art.creatorID = uid
+            art.placeStatus = "WAITING"
+            art.save()
+
+            return art
+        # end
+
+    # end
+
     registerUser = RegisterMutation.Field()
     loginUser = LoginMutation.Field()
     logout = LogoutMutation.Field()
     addColor = AddColorMutation.Field()
     addPalette = AddPaletteMutation.Field()
     addFont = AddFontMutation.Field()
+    addArticle = AddArticleMutation.Field()
 # end
 
 
