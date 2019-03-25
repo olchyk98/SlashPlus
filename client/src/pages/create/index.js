@@ -8,7 +8,7 @@ import { ChromePicker } from 'react-color';
 import { gql } from 'apollo-boost';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUnderline, faQuoteRight, faListUl, faListOl, faBold, faCode, faFont, faItalic, faFileImage, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faUnderline, faQuoteRight, faListUl, faListOl, faBold, faCode, faFont, faItalic, faFileImage, faTimes, faHeading } from '@fortawesome/free-solid-svg-icons';
 import { EditorState, RichUtils, AtomicBlockUtils } from 'draft-js';
 import { stateFromHTML } from 'draft-js-import-html';
 
@@ -380,10 +380,11 @@ class AddPalette extends PureComponent {
     }
 }
 
-const AddArticleToolsItem = ({ icon, _onClick, active }) => (
+const AddArticleToolsItem = ({ icon, _onClick, active, aStyle }) => (
     <button className={constructClassName({
         "definp btn rn-create-addarticle-tools-btn": true,
-        "active": active
+        "active": active,
+        [aStyle]: !!aStyle
     })} onMouseDown={ e => { e.preventDefault(); _onClick(e) } }>
         <FontAwesomeIcon icon={ icon } />
     </button>
@@ -392,81 +393,92 @@ const AddArticleToolsItem = ({ icon, _onClick, active }) => (
 AddArticleToolsItem.propTypes = {
     icon: PropTypes.object.isRequired,
     _onClick: PropTypes.func.isRequired,
-    active: PropTypes.bool.isRequired
+    active: PropTypes.bool.isRequired,
+    aStyle: PropTypes.string
 }
 
 class AddArticleTools extends PureComponent {
     render() {
         return(
             <menu className="rn-create-addarticle-tools">
-                {
-                    [
-                        {
-                            icon: faBold,
-                            styleType: "BOLD"
-                        },
-                        {
-                            icon: faItalic,
-                            styleType: "ITALIC"
-                        },
-                        {
-                            icon: faUnderline,
-                            styleType: "UNDERLINE"
-                        },
-                        {
-                            icon: faQuoteRight,
-                            blockType: "blockquote"
-                        },
-                        {
-                            icon: faCode,
-                            blockType: "code-block"
-                        },
-                        {
-                            icon: faListUl,
-                            blockType: "unordered-list-item"
-                        },
-                        {
-                            icon: faListOl,
-                            blockType: "ordered-list-item"
-                        },
-                        {
-                            icon: faFont,
-                            blockType: "header-one"
-                        },
-                        {
-                            icon: faFont,
-                            blockType: "header-two"
-                        },
-                        {
-                            icon: faFont,
-                            blockType: "header-three"
-                        },
-                        {
-                            icon: faFont,
-                            blockType: "header-four"
-                        },
-                        {
-                            icon: faFont,
-                            blockType: "header-five"
-                        },
-                        {
-                            icon: faFileImage,
-                            action: this.props.addImage
-                        }
-                    ].map(({ icon, styleType, blockType, action }, index) => (
-                        <AddArticleToolsItem
-                            key={ index }
-                            icon={ icon }
-                            active={!!(
-                                (styleType && this.props.currentStyle.has(styleType)) ||
-                                (blockType && this.props.currentBlock === blockType)
-                            )}
-                            _onClick={(!action) ? (
-                                e => { e.preventDefault(); this.props.applyStyle(styleType || blockType) }
-                            ) : (action)}
-                        />
-                    ))
-                }
+                <button className="definp btn rn-create-addarticle-tools-tomodal" onClick={ this.props.onRegTitle }>Add title</button>
+                <div className="rn-create-addarticle-tools-mat">
+                    {
+                        [
+                            {
+                                icon: faBold,
+                                styleType: "BOLD"
+                            },
+                            {
+                                icon: faItalic,
+                                styleType: "ITALIC"
+                            },
+                            {
+                                icon: faUnderline,
+                                styleType: "UNDERLINE"
+                            },
+                            {
+                                icon: faQuoteRight,
+                                blockType: "blockquote"
+                            },
+                            {
+                                icon: faCode,
+                                blockType: "code-block"
+                            },
+                            {
+                                icon: faListUl,
+                                blockType: "unordered-list-item"
+                            },
+                            {
+                                icon: faListOl,
+                                blockType: "ordered-list-item"
+                            },
+                            {
+                                icon: faFont,
+                                blockType: "header-one",
+                                astyle: "font-head-one"
+                            },
+                            {
+                                icon: faFont,
+                                blockType: "header-two",
+                                astyle: "font-head-two"
+                            },
+                            {
+                                icon: faFont,
+                                blockType: "header-three",
+                                astyle: "font-head-three"
+                            },
+                            {
+                                icon: faFont,
+                                blockType: "header-four",
+                                astyle: "font-head-four"
+                            },
+                            {
+                                icon: faFont,
+                                blockType: "header-five",
+                                astyle: "font-head-five"
+                            },
+                            {
+                                icon: faFileImage,
+                                action: this.props.addImage
+                            }
+                        ].map(({ icon, styleType, blockType, action, astyle }, index) => (
+                            <AddArticleToolsItem
+                                key={ index }
+                                icon={ icon }
+                                aStyle={ astyle }
+                                active={!!(
+                                    (styleType && this.props.currentStyle.has(styleType)) ||
+                                    (blockType && this.props.currentBlock === blockType)
+                                )}
+                                _onClick={(!action) ? (
+                                    e => { e.preventDefault(); this.props.applyStyle(styleType || blockType) }
+                                ) : (action)}
+                            />
+                        ))
+                    }
+                </div>
+                <button disabled={ !this.props.canPublish } onClick={ this.props.onPublish } className="definp btn rn-create-addarticle-tools-tomodal">Publish</button>
             </menu>
         );
     }
@@ -497,7 +509,7 @@ class AddArticleImageModal extends Component {
     render() {
         return(
             <>
-                <div className={constructClassName({
+                <div onClick={ this.props.onClose } className={constructClassName({
                     "rn-create-addarticle-addnim__bg": true,
                     "active": this.props.inFocus
                 })} />
@@ -533,6 +545,86 @@ AddArticleImageModal.propTypes = {
     inFocus: PropTypes.bool.isRequired
 }
 
+class AddArticleSettingsModal extends PureComponent {
+    constructor(props) {
+        super(props);
+
+        this.data = {
+            title: ""
+        }
+    }
+
+    render() {
+        return(
+            <>
+                <div onClick={ this.props.onClose } className={constructClassName({
+                    "rn-create-addarticle-settings__bg": true,
+                    "active": this.props.inFocus
+                })} />
+                <div className="rn-create-addarticle-settings">
+                    <button onClick={ this.props.onClose } className="rn-create-addarticle-close definp btn">
+                        <FontAwesomeIcon icon={ faTimes } />
+                    </button>
+                    <div className="rn-create-addarticle-addnim-icon">
+                        <FontAwesomeIcon icon={ faHeading } />
+                    </div>
+                    <h2 className="rn-create-addarticle-addnim-title">
+                        Add title
+                    </h2>
+                    <input
+                        type="text"
+                        placeholder="Article title"
+                        className="rn-create-addarticle-addnim-url definp"
+                        onChange={ ({ target: { value: a } }) => this.data.title = a }
+                    />
+                    <button onClick={ () => { this.props._onSubmit(this.data.title); this.props.onClose(); } } className="rn-create-addarticle-addnim-submit definp btn">Submit</button>
+                </div>
+            </>
+        );
+    }
+}
+
+AddArticleSettingsModal.propTypes = {
+    _onSubmit: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
+    inFocus: PropTypes.bool.isRequired
+}
+
+class AddArticleSubmitModal extends PureComponent {
+    render() {
+        return(
+            <>
+                <div onClick={ this.props.onClose } className={constructClassName({
+                    "rn-create-addarticle-submitmodal__bg": true,
+                    "active": this.props.inFocus
+                })} />
+                <div className="rn-create-addarticle-submitmodal">
+                    <button onClick={ this.props.onClose } className="rn-create-addarticle-close definp btn">
+                        <FontAwesomeIcon icon={ faTimes } />
+                    </button>
+                    <div className="rn-create-addarticle-addnim-icon">
+                        <FontAwesomeIcon icon={ faHeading } />
+                    </div>
+                    <h2 className="rn-create-addarticle-addnim-title">
+                        Are you sure that you want to submit?
+                    </h2>
+                    <p className="rn-create-addarticle-addnim-content">
+                        You won't be able to change content after publication. Your article will be sent to administration, they can apply or deny your article.
+                        Anyway your visitors are able to see even denied articles. <strong>After you click submit button we will redirect you to the home page.</strong>
+                    </p>
+                    <button onClick={ () => { this.props._onSubmit(); this.props.onClose(); } } className="rn-create-addarticle-addnim-submit definp btn">Submit</button>
+                </div>
+            </>
+        );
+    }
+}
+
+AddArticleSubmitModal.propTypes = {
+    _onSubmit: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
+    inFocus: PropTypes.bool.isRequired
+}
+
 class AddArticle extends Component {
     constructor(props) {
         super(props);
@@ -540,22 +632,11 @@ class AddArticle extends Component {
         this.state = {
             editorState: EditorState.createEmpty(),
             currentBlock: null,
-            showPlaceholder: true,
-            addImageModal: false
+            addImageModal: false,
+            addSettingsModal: false,
+            articleTitle: "",
+            submitArticleModal: false
         }
-    }
-
-    componentDidUpdate() {
-        {
-			let a = this.getEditorBlock();
-
-	        if(this.state.currentBlock !== a) {
-		    	this.setState(() => ({
-		    		currentBlock: a,
-		    		showPlaceholder: a === 'unstyled'
-		    	}));
-	    	}
-		}
     }
 
     getEditorBlock = () => {
@@ -597,7 +678,7 @@ class AddArticle extends Component {
 		}));
 	}
 
-    addImage = (src) => { // TODO: <mark /> block, insert image, block split by an image
+    addImage = (src) => {
         const a = this.state.editorState.getCurrentContent();
         const b = a.createEntity(
           "image",
@@ -615,6 +696,21 @@ class AddArticle extends Component {
         }));
     }
 
+    publishArticle = () => {
+        if(
+            !this.state.articleTitle.replace(/\s|\n/g, "").length ||
+            !this.state.editorState.getCurrentContent().hasText()
+        ) return;
+
+        // client.query({
+        //     query: gql`
+        //
+        //     `
+        // }).then(({ add }) => {
+        //
+        // })
+    }
+
     render() {
         return(
             <div className="rn-create-addarticle">
@@ -623,17 +719,32 @@ class AddArticle extends Component {
                     _onSubmit={ this.addImage }
                     onClose={ () => this.setState({ addImageModal: false }) }
                 />
+                <AddArticleSettingsModal
+                    inFocus={ this.state.addSettingsModal }
+                    _onSubmit={ (title) => this.setState({ articleTitle: title }) }
+                    onClose={ () => this.setState({ addSettingsModal: false }) }
+                />
+                <AddArticleSubmitModal
+                    inFocus={ this.state.submitArticleModal }
+                    _onSubmit={ this.publishArticle }
+                    onClose={ () => this.setState({ submitArticleModal: false }) }
+                />
                 <AddArticleTools
                     applyStyle={ style => this.editText(null, style) }
                     currentBlock={ this.state.currentBlock }
                     currentStyle={ this.state.editorState.getCurrentInlineStyle() }
                     addImage={ () => this.setState({ addImageModal: true }) }
+                    canPublish={
+                        this.state.articleTitle.replace(/\s|\n/g, "").length &&
+                        this.state.editorState.getCurrentContent().hasText()
+                    }
+                    onPublish={ () => this.setState({ submitArticleModal: true }) }
+                    onRegTitle={ () => this.setState({ addSettingsModal: true }) }
                 />
                 <div className="rn-create-addarticle-workspace">
                     <Editor
                         onChange={ this.editText }
                         editorState={ this.state.editorState }
-                        placeholder={ (this.state.placeholder) ? "Start typing..." : "" }
                         plugins={[
                           blockDndPlugin,
                           focusPlugin,
