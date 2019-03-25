@@ -288,3 +288,123 @@
 .rn-create-addarticle-workspace__inc__code:last-child {
     padding-bottom:var(--margin);
 }
+
+.rn-create-addarticle-addnim__bg {
+    height:100vh;
+    width:100vw;
+    position:fixed;
+    top:0;
+    left:0;
+    background:rgba(0, 0, 0, .25);
+    z-index:101;
+}
+
+.rn-create-addarticle-addnim {
+    position:fixed;
+    top:50%;
+    left:50%;
+    margin-right:50%;
+    transform:translate(-50%, -50%);
+    margin:0;
+    border-radius:2.5px;
+    background:white;
+    z-index:102;
+    padding:15px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    max-width:calc(100vw - 15px);
+    width:300px;
+}
+
+.rn-create-addarticle-addnim__bg,
+.rn-create-addarticle-addnim {
+    --trans:.15s;
+
+    opacity:0;
+    visibility:hidden;
+    transition:all var(--trans), visibility var(--trans);
+}
+
+.rn-create-addarticle-addnim__bg.active,
+.rn-create-addarticle-addnim__bg.active ~ .rn-create-addarticle-addnim {
+    transition:all var(--trans), visibility 0s;
+    opacity:1;
+    visibility:visible;
+}
+
+.rn-create-addarticle-addnim-icon {
+    --size:45px;
+
+    font-size:1.25rem;
+    box-shadow:0px 0px 15px -2.5px rgba(0, 0, 255, .15);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:50%;
+    background:#E4E3FE;
+    color:#5C52FB;
+    height:var(--size);
+    width:var(--size);
+}
+
+.rn-create-addarticle-addnim-title {
+    --margin:7.5px;
+
+    margin-top:var(--margin);
+    margin-bottom:var(--margin);
+    font-family:"Lato";
+    font-weight:400;
+    text-align:center;
+    font-size:1.25rem;
+    user-select:none;
+}
+
+.rn-create-addarticle-addnim-url {
+    height:35px;
+    max-width:100%;
+    width:200px;
+    border-bottom:2px solid gray;
+    transition:.1s;
+}
+
+.rn-create-addarticle-addnim-url:focus {
+    border-color:blue;
+}
+
+.rn-create-addarticle-addnim-submit {
+    height:35px;
+    width:80px;
+    border-radius:3px;
+    background:#5B53FF;
+    color:white;
+    /* box-shadow:0px 0px 7.5px -2.5px #5B53FF; */
+    font-family:"Lato";
+    font-weight:300;
+    letter-spacing:.5px;
+    font-size:.875rem;
+    cursor:pointer;
+    margin-top:20px;
+}
+
+.rn-create-addarticle-addnim-submit.offline {
+    background:#8e8ae9;
+    cursor:not-allowed;
+}
+
+.rn-create-addarticle-close {
+    --gap:15px;
+
+    position:absolute;
+    top:var(--gap);
+    right:var(--gap);
+    font-size:.925rem;
+    color:black;
+    cursor:pointer;
+    opacity:.5;
+    transition:.15s;
+}
+
+.rn-create-addarticle-close:hover {
+    opacity:.9;
+}

@@ -1,3 +1,5 @@
+/* eslint-disable import/first */
+
 import React, { Component, PureComponent } from 'react';
 import { PropTypes } from 'prop-types';
 import './main.css';
@@ -6,17 +8,27 @@ import { ChromePicker } from 'react-color';
 import { gql } from 'apollo-boost';
 import { connect } from 'react-redux';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUnderline, faQuoteRight, faListUl, faListOl, faBold, faCode, faFont, faItalic } from '@fortawesome/free-solid-svg-icons';
+import { faUnderline, faQuoteRight, faListUl, faListOl, faBold, faCode, faFont, faItalic, faFileImage, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { EditorState, RichUtils, AtomicBlockUtils } from 'draft-js';
-import Editor from "draft-js-plugins-editor";
-import createImagePlugin from "draft-js-image-plugin";
 import { stateFromHTML } from 'draft-js-import-html';
+
+import Editor, { composeDecorators } from "draft-js-plugins-editor";
+import createImagePlugin from 'draft-js-image-plugin';
+import createFocusPlugin from 'draft-js-focus-plugin';
+import createBlockDndPlugin from 'draft-js-drag-n-drop-plugin';
+
+const focusPlugin = createFocusPlugin();
+const blockDndPlugin = createBlockDndPlugin();
+
+const decorator = composeDecorators(
+  focusPlugin.decorator,
+  blockDndPlugin.decorator
+);
+const imagePlugin = createImagePlugin({ decorator });
 
 import { constructClassName } from '../../utils';
 import client from '../../apollo';
 import links from '../../links';
-
-const imagePlugin = createImagePlugin();
 
 const MessageAsset = ({ active, isError, message }) => (!active) ? null : (
     <p className={constructClassName({
@@ -436,8 +448,12 @@ class AddArticleTools extends PureComponent {
                         {
                             icon: faFont,
                             blockType: "header-five"
+                        },
+                        {
+                            icon: faFileImage,
+                            action: this.props.addImage
                         }
-                    ].map(({ icon, styleType, blockType }, index) => (
+                    ].map(({ icon, styleType, blockType, action }, index) => (
                         <AddArticleToolsItem
                             key={ index }
                             icon={ icon }
@@ -445,13 +461,76 @@ class AddArticleTools extends PureComponent {
                                 (styleType && this.props.currentStyle.has(styleType)) ||
                                 (blockType && this.props.currentBlock === blockType)
                             )}
-                            _onClick={ e => { e.preventDefault(); this.props.applyStyle(styleType || blockType) } }
+                            _onClick={(!action) ? (
+                                e => { e.preventDefault(); this.props.applyStyle(styleType || blockType) }
+                            ) : (action)}
                         />
                     ))
                 }
             </menu>
         );
     }
+}
+
+class AddArticleImageModal extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            srcIsValid: null,
+            src: ""
+        }
+    }
+
+    checkURL = () => {
+        const v = a => this.setState({ srcIsValid: a });
+        if(!this.state.src.replace(/\s|\n/g, "").length) return v(false);
+
+        const a = new Image();
+        a.src = this.state.src;
+
+        v(false); // while loads
+        a.onload = () => v(true);
+        a.onerror = () => v(false);
+    }
+
+    render() {
+        return(
+            <>
+                <div className={constructClassName({
+                    "rn-create-addarticle-addnim__bg": true,
+                    "active": this.props.inFocus
+                })} />
+                <div className="rn-create-addarticle-addnim">
+                    <button onClick={ this.props.onClose } className="rn-create-addarticle-close definp btn">
+                        <FontAwesomeIcon icon={ faTimes } />
+                    </button>
+                    <div className="rn-create-addarticle-addnim-icon">
+                        <FontAwesomeIcon icon={ faFileImage } />
+                    </div>
+                    <h2 className="rn-create-addarticle-addnim-title">
+                        Paste image URL
+                    </h2>
+                    <input
+                        type="text"
+                        placeholder="Image URL"
+                        className="rn-create-addarticle-addnim-url definp"
+                        onChange={ ({ target: { value: a } }) => this.setState({ src: a }, this.checkURL) }
+                    />
+                    <button onClick={ () => { this.props._onSubmit(this.state.src); this.props.onClose(); } } disabled={ !this.state.srcIsValid } className={constructClassName({
+                        "rn-create-addarticle-addnim-submit definp btn": true,
+                        "offline": !this.state.srcIsValid
+                    })}>Submit</button>
+                </div>
+            </>
+        );
+    }
+}
+
+AddArticleImageModal.propTypes = {
+    _onSubmit: PropTypes.func.isRequired,
+    onClose: PropTypes.func.isRequired,
+    inFocus: PropTypes.bool.isRequired
 }
 
 class AddArticle extends Component {
@@ -461,7 +540,8 @@ class AddArticle extends Component {
         this.state = {
             editorState: EditorState.createEmpty(),
             currentBlock: null,
-            showPlaceholder: true
+            showPlaceholder: true,
+            addImageModal: false
         }
     }
 
@@ -517,44 +597,48 @@ class AddArticle extends Component {
 		}));
 	}
 
-    _confirmMedia = () => { // TODO: <mark /> block, insert image, block split by an image
-         const { editorState } = this.state;
-         const contentState = editorState.getCurrentContent();
-         const contentStateWithEntity = contentState.createEntity(
-           'image',
-           'IMMUTABLE',
-           {
-               url: "https://www.thespruce.com/thmb/YsYL-pB75OrpblFT1THFBe11X5A=/450x0/filters:no_upscale():max_bytes(150000):strip_icc()/frigatebird-5b045e571d640400376297a4.jpg"
-           }
-         );
-         const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-         const newEditorState = EditorState.set(
-           editorState,
-           {currentContent: contentStateWithEntity}
-         );
-         this.setState({
-           editorState: AtomicBlockUtils.insertAtomicBlock(
-             newEditorState,
-             entityKey,
-             ' '
-           )
-         });
-       }
+    addImage = (src) => { // TODO: <mark /> block, insert image, block split by an image
+        const a = this.state.editorState.getCurrentContent();
+        const b = a.createEntity(
+          "image",
+          "IMMUTABLE",
+          { src }
+        );
+
+        const c = b.getLastCreatedEntityKey();
+        const d = EditorState.set(this.state.editorState, {
+          currentContent: b
+        });
+
+        this.setState(() => ({
+            editorState: AtomicBlockUtils.insertAtomicBlock(d, c, " ")
+        }));
+    }
 
     render() {
         return(
             <div className="rn-create-addarticle">
+                <AddArticleImageModal
+                    inFocus={ this.state.addImageModal }
+                    _onSubmit={ this.addImage }
+                    onClose={ () => this.setState({ addImageModal: false }) }
+                />
                 <AddArticleTools
                     applyStyle={ style => this.editText(null, style) }
                     currentBlock={ this.state.currentBlock }
                     currentStyle={ this.state.editorState.getCurrentInlineStyle() }
+                    addImage={ () => this.setState({ addImageModal: true }) }
                 />
                 <div className="rn-create-addarticle-workspace">
                     <Editor
                         onChange={ this.editText }
                         editorState={ this.state.editorState }
                         placeholder={ (this.state.placeholder) ? "Start typing..." : "" }
-                        plugins={[ imagePlugin ]}
+                        plugins={[
+                          blockDndPlugin,
+                          focusPlugin,
+                          imagePlugin
+                        ]}
                         ref={ ref => this.editorMat = ref }
                         blockStyleFn={a => {
                             let b = a.getType();

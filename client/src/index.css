@@ -29,6 +29,13 @@ menu {
 	font-size:1em;
 }
 
+.hidden {
+	display:none;
+	visibility:hidden;
+	position:absolute;
+	opacity:0;
+}
+
 .definp.btn {
 	cursor:pointer;
 }
