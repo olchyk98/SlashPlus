@@ -10,45 +10,13 @@ import client from '../../apollo';
 import links from '../../links';
 import { constructClassName } from '../../utils';
 
-class PalettesItem extends Component {
-	constructor(props) {
-		super(props);
-
-		this.state = {
-			focusIN: null
-		}
-	}
-
-	render() {
-		return(
-			<div className={constructClassName({
-				"rn-sections-item-palette": true,
-				"infocus": this.props.inFocus
-			})} onMouseEnter={ this.props.setFocus }>
-				{
-					this.props.colors.map((session, index) => (
-						<div
-							key={ index }
-							style={{ background: session }}
-							className={ (this.state.focusIN !== index) ? "" : "infocus" }
-							onMouseEnter={ () => this.setState({ focusIN: index }) }
-						/>
-					))
-				}
-			</div>
-		);
-	}
-}
-
-PalettesItem.propTypes = {
-	colors: PropTypes.array.isRequired
-}
+import PalettesItem from '../__forall__/colorpalette';
 
 class Palettes extends PureComponent {
 	render() {
 		return(
 			<article className="rn-sections-item">
-				<Link to={ "/" } className="rn-sections-item-title">Color palettes</Link>
+				<Link to={ links["PALETTES_PAGE"].absolute } className="rn-sections-item-title">Color palettes</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content grid">
 					{

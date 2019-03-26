@@ -20,6 +20,7 @@
 	font-weight:500;
 	font-size:1.5rem;
 	margin:0;
+	text-transform:capitalize;
 	text-decoration:none;
 	margin-bottom:17.5px;
 	color:black;
@@ -41,48 +42,6 @@
 	display:flex;
 	justify-content:space-between;
 	flex-wrap:wrap;
-}
-
-.rn-sections-item-palette {
-	--brr:3px;
-
-	height:45px;
-	width:100%;
-	display:flex;
-	align-items:stretch;
-}
-
-.rn-sections-item-palette.hov {
-	overflow:hidden;
-	border-radius:var(--brr);
-}
-
-.rn-sections-item-palette.hov > * {
-	width:100%;
-}
-
-.rn-sections-item-palette > div.infocus {
-	z-index:5;
-}
-
-.rn-sections-item-palette:not(.hov) > div:first-child {
-	border-radius:var(--brr) 0 0 var(--brr);
-}
-
-.rn-sections-item-palette:not(.hov) > div:last-child {
-	border-radius:0 var(--brr) var(--brr) 0;
-}
-
-.rn-sections-item-palette:not(.hov) > div {
-	width:100%;
-	transition:.25s ease-in-out;
-	cursor:pointer;
-	position:relative;
-}
-
-.rn-sections-item-palette:not(.hov) > div:hover {
-	border-radius:5px;
-	transform:scale(1.15);
 }
 
 .rn-sections-item-content-font {

@@ -7,7 +7,9 @@ function reducer(state = {}, { type, payload }) {
         case 'SET_FETCH_STATUS':
             a.isFetching = payload;
         break;
-
+        case 'PUSH_ALERTION_STATE':
+            a.globalAlert = payload;
+        break;
         default:break;
     }
 

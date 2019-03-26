@@ -9,9 +9,11 @@ import { Provider } from 'react-redux';
 import Main from './pages/main';
 import Profile from './pages/profile';
 import Create from './pages/create';
+import Palettes from './pages/palettes';
 
 // Stuff
 import Navigation from './pages/__forall__/nav';
+import Alert from './pages/__forall__/alertion';
 import links from './links';
 import reduxStore from './rstore';
 import { cookieControl } from './utils';
@@ -45,6 +47,7 @@ class App extends Component {
                 <BrowserRouter>
                     <>
                         <Navigation />
+						<Alert />
                         <Switch>
                             <Route path={ links["HOME_PAGE"].route } exact component={ Main } />
 							<ProtectedRoute
@@ -58,6 +61,14 @@ class App extends Component {
 							<ProtectedRoute
                                 path={ links["CREATE_PAGE"].route }
                                 component={ Create }
+                                redirect={ Main }
+                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
+                                condition={ this.clientID }
+                                exact
+                            />
+							<ProtectedRoute
+                                path={ links["PALETTES_PAGE"].route }
+                                component={ Palettes }
                                 redirect={ Main }
                                 redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
                                 condition={ this.clientID }

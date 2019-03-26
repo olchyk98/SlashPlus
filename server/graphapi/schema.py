@@ -118,7 +118,7 @@ class RootQuery(GraphQL.ObjectType):
     users = GraphQL.List(UserType)
     user = GraphQL.Field(UserType, targetLogin = GraphQL.String())
     validateUser = GraphQL.List(GraphQL.Boolean, login = GraphQL.String(), email = GraphQL.NonNull(GraphQL.String))  # [bool!, bool!]::[login, email]
-    getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.NonNull(GraphQL.Int))
+    getColorPalletes = GraphQL.List(ColorPaletteType, limit = GraphQL.NonNull(GraphQL.Int), focusCol = GraphQL.String())
     getColors = GraphQL.List(ColorType, limit = GraphQL.NonNull(GraphQL.Int))
     getFonts = GraphQL.List(FontType, limit = GraphQL.NonNull(GraphQL.Int))
     getArticles = GraphQL.List(ArticleType, limit = GraphQL.NonNull(GraphQL.Int))
@@ -178,8 +178,12 @@ class RootQuery(GraphQL.ObjectType):
         return result
     # end
 
-    def resolve_getColorPalletes(self, info, limit): # Get %LIMIT% random palettes
-        return ColorPalette.objects.all().order_by('?')[:limit]
+    def resolve_getColorPalletes(self, info, limit, focusCol = None): # Get %LIMIT% random palettes
+        if(not focusCol):
+            return ColorPalette.objects.all().order_by('?')[:limit]
+        else:
+            return ColorPalette.objects.filter(colors__contains = focusCol).order_by('?')[:limit]
+        # end
     # end
 
     def resolve_getColors(self, info, limit):

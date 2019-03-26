@@ -10,6 +10,10 @@ const links = {
 	"CREATE_PAGE": {
 		absolute: '/new',
 		route: '/new/:part?'
+	},
+	"PALETTES_PAGE": {
+		absolute: '/palettes',
+		route: '/palettes'
 	}
 }
 

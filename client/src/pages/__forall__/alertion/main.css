@@ -1,0 +1,56 @@
+.gl-alertion {
+    --gap:15px;
+    --padding:15px;
+
+    padding-left:var(--padding);
+    padding-right:var(--padding);
+    height:40px;
+    box-shadow:inherit;
+    position:fixed;
+    bottom:var(--gap);
+    left:var(--gap);
+    border-radius:45px;
+    display:flex;
+    align-items:center;
+    background:white;
+    z-index:4000;
+    font-family:"Quicksand";
+    transform:translateY(calc(var(--gap) + 100%));
+    transition:.25s;
+}
+
+.gl-alertion.active {
+    transform:translateY(0);
+    box-shadow:0px 0px 5px -1px rgba(0, 0, 0, .4);
+}
+
+.gl-alertion-times {
+    --size:25px;
+
+    height:var(--size);
+    width:var(--size);
+    display:flex;
+    align-items:center;
+    position:relative;
+    justify-content:center;
+    margin-left:25px;
+    font-size:1rem;
+    color:rgba(0, 0, 0, .5);
+}
+
+.gl-alertion-times:before {
+    content:'';
+    position:absolute;
+    top:0;
+    left:0;
+    width:100%;
+    border-radius:5px;
+    background:black;
+    height:100%;
+    transition:.25s;
+    opacity:0;
+}
+
+.gl-alertion-times:hover:before {
+    opacity:.05;
+}
