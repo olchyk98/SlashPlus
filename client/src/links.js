@@ -22,6 +22,14 @@ const links = {
 	"FONTS_PAGE": {
 		absolute: '/fonts',
 		route: '/fonts'
+	},
+	"ARTICLES_PAGE": {
+		absolute: '/articles',
+		route: '/articles'
+	},
+	"ARTICLE_DISPLAY_PAGE": {
+		absolute: '/a',
+		route: '/a/:id'
 	}
 }
 
