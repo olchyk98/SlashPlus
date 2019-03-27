@@ -6,12 +6,16 @@ import { gql } from 'apollo-boost';
 
 import client from '../../apollo';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faRedo } from '@fortawesome/free-solid-svg-icons';
+
 class Hero extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            colors: false
+            colors: false,
+            isLoading: false
         }
     }
 
@@ -20,6 +24,14 @@ class Hero extends Component {
     }
 
     fetchData = () => {
+        if(this.state.isLoading) return;
+
+        this.setState(() => ({
+            isLoading: true
+        }));
+
+        this.props.startFetch(true);
+
         client.query({
             query: gql`
                 query($colorsLimit: Int!) {
@@ -30,10 +42,13 @@ class Hero extends Component {
                 }
             `,
             variables: {
-                $colorsLimit: 10
+                colorsLimit: 10
             }
         }).then(({ data: { getColors: a } }) => {
             this.props.startFetch(false);
+            this.setState(() => ({
+                isLoading: false
+            }));
 
             if(!a) return;
 
@@ -43,6 +58,9 @@ class Hero extends Component {
         }).catch((err) => {
             console.error(err);
             this.props.startFetch(false);
+            this.setState(() => ({
+                isLoading: false
+            }));
         });
     }
 
@@ -50,6 +68,9 @@ class Hero extends Component {
         return(
             <div className="rn rn-colors">
                 <h1 className="rn__middle__title">Colors</h1>
+                <button className="definp btn rn-palettes-rand" onClick={ () => this.fetchData() }>
+                    <FontAwesomeIcon icon={ faRedo } />
+                </button>
                 <div className="rn-sections-item-content grid rn-palettes-grid">
                     {
                         (this.state.colors) ? (

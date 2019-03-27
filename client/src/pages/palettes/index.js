@@ -7,6 +7,7 @@ import { connect } from 'react-redux';
 
 import client from '../../apollo';
 import { constructClassName } from '../../utils';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRedo } from '@fortawesome/free-solid-svg-icons';
 
@@ -42,7 +43,8 @@ class Hero extends Component {
             focusColor: null,
             searchingByColor: false,
             palettes: false,
-            popColors: false
+            popColors: false,
+            isLoading: false
         }
     }
 
@@ -73,6 +75,12 @@ class Hero extends Component {
     }
 
     fetchData = (focusCol = null, callback = null) => {
+        if(this.state.isLoading) return;
+
+        this.setState(() => ({
+            isLoading: true
+        }));
+
         this.props.startFetch(true);
 
         client.query({
@@ -90,6 +98,9 @@ class Hero extends Component {
             }
         }).then(({ data: { getColorPalletes: a } }) => {
             this.props.startFetch(false);
+            this.setState(() => ({
+                isLoading: false
+            }));
 
             this.setState(({ popColors }) => ({
                 palettes: a,
@@ -99,6 +110,9 @@ class Hero extends Component {
         }).catch((err) => {
             console.error(err);
             this.props.startFetch(false);
+            this.setState(() => ({
+                isLoading: false
+            }));
         });
     }
 

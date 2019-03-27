@@ -93,7 +93,7 @@ class Fonts extends PureComponent {
 	render() {
 		return(
 			<article className="rn-sections-item">
-				<Link to={ "/" } className="rn-sections-item-title">Fonts</Link>
+				<Link to={ links["FONTS_PAGE"].absolute } className="rn-sections-item-title">Fonts</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content flex">
 					{
@@ -221,15 +221,6 @@ class Hero extends Component {
 			this.props.startFetch(false);
 			// Check if all data was transported correctly
 			if(!a || !b || !c || !d) return console.error("Requested data wasn't successfully verified.");
-
-			// Load fonts which we will display
-			for(let ma of c.map(io => io.src)) {
-				const _a = document.createElement('link');
-				_a.setAttribute('rel', 'stylesheet');
-				_a.setAttribute('type', 'text/css');
-				_a.setAttribute('href', ma);
-				document.head.appendChild(_a);
-			}
 
 			// Accept data
 			this.setState(() => ({

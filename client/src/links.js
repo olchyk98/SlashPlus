@@ -18,6 +18,10 @@ const links = {
 	"COLORS_PAGE": {
 		absolute: '/colors',
 		route: '/colors'
+	},
+	"FONTS_PAGE": {
+		absolute: '/fonts',
+		route: '/fonts'
 	}
 }
 

@@ -5,10 +5,17 @@ import './main.css';
 import api from '../../../api';
 
 class Hero extends PureComponent {
+	componentDidMount() {
+		const a = document.createElement('link');
+		a.setAttribute('rel', 'stylesheet');
+		a.setAttribute('type', 'text/html');
+		a.setAttribute('href', this.props.src);
+		document.head.appendChild(a);
+	}
+
 	download(src) {
 		const a = document.createElement("a");
 		a.href = api.storage + src;
-		console.log(src);
 		a.click();
 	}
 

@@ -11,6 +11,7 @@ import Profile from './pages/profile';
 import Create from './pages/create';
 import Palettes from './pages/palettes';
 import Colors from './pages/colors';
+import Fonts from './pages/fonts';
 
 // Stuff
 import Navigation from './pages/__forall__/nav';
@@ -78,6 +79,14 @@ class App extends Component {
 							<ProtectedRoute
                                 path={ links["COLORS_PAGE"].route }
                                 component={ Colors }
+                                redirect={ Main }
+                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
+                                condition={ this.clientID }
+                                exact
+                            />
+							<ProtectedRoute
+                                path={ links["FONTS_PAGE"].route }
+                                component={ Fonts }
                                 redirect={ Main }
                                 redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
                                 condition={ this.clientID }
