@@ -71,7 +71,7 @@ class Hero extends Component {
     render() {
         return(
             <div className="rn rn-fonts">
-                <h1 className="rn__middle__title">Colors</h1>
+                <h1 className="rn__middle__title">Fonts</h1>
                 <button className="definp btn rn-palettes-rand" onClick={ () => this.fetchFonts() }>
                     <FontAwesomeIcon icon={ faRedo } />
                 </button>
