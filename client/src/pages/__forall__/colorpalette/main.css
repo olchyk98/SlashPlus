@@ -35,7 +35,8 @@
 	position:relative;
 }
 
-.rn-sections-item-palette:not(.hov) > div:hover {
+.rn-sections-item-palette:not(.hov) > div:hover,
+.rn-sections-item-palette.hov.prevent > div:hover {
 	border-radius:5px;
 	transform:scale(1.15);
 }

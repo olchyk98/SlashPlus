@@ -29,7 +29,15 @@ class Hero extends Component {
 							className={ (this.state.focusIN !== index) ? "" : "infocus" }
 							onMouseEnter={ () => this.setState({ focusIN: index }) }
                             onClick={() => {
-                                this.props.castAlert(<>Color <strong>{ session }</strong> was copied to the clipboard!</>);
+								const el = document.createElement('textarea');
+								el.class = "hidden";
+								el.value = session;
+								document.body.appendChild(el);
+								el.select();
+								document.execCommand('copy');
+								document.body.removeChild(el);
+
+                                this.props.castAlert(<>Color <strong>{ session }</strong> was copied to clipboard!</>);
                             }}
 						/>
 					))

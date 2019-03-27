@@ -8,9 +8,9 @@ import { connect } from 'react-redux';
 
 import client from '../../apollo';
 import links from '../../links';
-import { constructClassName } from '../../utils';
 
 import PalettesItem from '../__forall__/colorpalette';
+import FontsItem from '../__forall__/font';
 
 class Palettes extends PureComponent {
 	render() {
@@ -42,8 +42,18 @@ Palettes.propTypes = {
 	])
 }
 
-const ColoursItem = ({ color }) => (
-	<div className="rn-sections-item-palette hov">
+const ColoursItem = ({ color, castAlert }) => (
+	<div onClick={() => {
+		const el = document.createElement('textarea');
+		el.class = "hidden";
+		el.value = color;
+		document.body.appendChild(el);
+		el.select();
+		document.execCommand('copy');
+		document.body.removeChild(el);
+
+		castAlert(<>Color <strong>{ color }</strong> was copied to clipboard!</>);
+	}} className="rn-sections-item-palette hov prevent">
 		<div style={{ background: color }} />
 	</div>
 )
@@ -52,7 +62,7 @@ class Colours extends PureComponent {
 	render() {
 		return(
 			<article className="rn-sections-item">
-				<Link to={ "/" } className="rn-sections-item-title">Colours</Link>
+				<Link to={ links["COLORS_PAGE"].absolute } className="rn-sections-item-title">Colors</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content grid">
 					{
@@ -61,6 +71,7 @@ class Colours extends PureComponent {
 								<ColoursItem
 									key={ id }
 									color={ color }
+									castAlert={ this.props.castAlert }
 								/>
 							))
 						) : <>Loading</>
@@ -78,10 +89,6 @@ Colours.propTypes = {
 	])
 }
 
-const FontsItem = ({ font, name }) => (
-	<button className="rn-sections-item-content-font definp" style={{ fontFamily: font }}>{ name }</button>
-)
-
 class Fonts extends PureComponent {
 	render() {
 		return(
@@ -91,11 +98,12 @@ class Fonts extends PureComponent {
 				<div className="rn-sections-item-content flex">
 					{
 						(this.props.fonts) ? (
-							this.props.fonts.map(({ id, name, fontName }) => (
+							this.props.fonts.map(({ id, name, fontName, src }) => (
 								<FontsItem
 									key={ id }
 									name={ name }
 									font={ fontName }
+									src={ src }
 								/>
 							))
 						) : <>Loading</>
@@ -172,8 +180,6 @@ class Hero extends Component {
 		}
 	}
 
-	// TODO: Loading placeholder
-
 	componentDidMount() {
 		this.fetchData();
 	}
@@ -245,6 +251,7 @@ class Hero extends Component {
 				/>
 				<Colours
 					colors={ this.state.assets && this.state.assets.colors }
+					castAlert={ this.props.castAlert }
 				/>
 				<Fonts
 					fonts={ this.state.assets && this.state.assets.fonts }
@@ -260,7 +267,8 @@ class Hero extends Component {
 const mapStateToProps = () => ({});
 
 const mapActionsToProps = {
-	startFetch: payload => ({ type: 'SET_FETCH_STATUS', payload })
+	startFetch: payload => ({ type: 'SET_FETCH_STATUS', payload }),
+	castAlert: message => ({ type: 'PUSH_ALERTION_STATE', payload: { message } })
 }
 
 export default connect(

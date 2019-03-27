@@ -10,6 +10,7 @@ import Main from './pages/main';
 import Profile from './pages/profile';
 import Create from './pages/create';
 import Palettes from './pages/palettes';
+import Colors from './pages/colors';
 
 // Stuff
 import Navigation from './pages/__forall__/nav';
@@ -69,6 +70,14 @@ class App extends Component {
 							<ProtectedRoute
                                 path={ links["PALETTES_PAGE"].route }
                                 component={ Palettes }
+                                redirect={ Main }
+                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
+                                condition={ this.clientID }
+                                exact
+                            />
+							<ProtectedRoute
+                                path={ links["COLORS_PAGE"].route }
+                                component={ Colors }
                                 redirect={ Main }
                                 redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
                                 condition={ this.clientID }

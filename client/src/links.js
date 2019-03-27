@@ -14,6 +14,10 @@ const links = {
 	"PALETTES_PAGE": {
 		absolute: '/palettes',
 		route: '/palettes'
+	},
+	"COLORS_PAGE": {
+		absolute: '/colors',
+		route: '/colors'
 	}
 }
 

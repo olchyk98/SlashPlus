@@ -44,18 +44,6 @@
 	flex-wrap:wrap;
 }
 
-.rn-sections-item-content-font {
-	font-size:3rem;
-	cursor:pointer;
-	font-weight:500;
-	color:black;
-	transition:.15s;
-}
-
-.rn-sections-item-content-font:hover {
-	transform:scale(1.05);
-}
-
 .rn-sections-item-content-article {
 	display:flex;
 	flex-direction:column;
