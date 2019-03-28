@@ -30,6 +30,10 @@ const links = {
 	"ARTICLE_DISPLAY_PAGE": {
 		absolute: '/a',
 		route: '/a/:id'
+	},
+	"VERIFICATION_PAGE": {
+		absolute: '/verification',
+		route: '/verification'
 	}
 }
 

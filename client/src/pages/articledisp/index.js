@@ -47,12 +47,17 @@ class Hero extends Component {
         }).then(({ data: { readArticle: a } }) => {
             this.props.startFetch(false);
 
-            if(!a) return;
+            if(!a) {
+                this.props.history.push(links["HOME_PAGE"].absolute);
+
+                return;
+            }
 
             this.setState(() => ({
                 article: a
             }));
         }).catch((err) => {
+            this.props.history.push(links["HOME_PAGE"].absolute);
             console.error(err);
             this.props.startFetch(false);
         });
@@ -64,10 +69,10 @@ class Hero extends Component {
                 {
                     (this.state.article) ? (
                         <div className="rn-articledisp-cover">
-                            <h1 class="rn-articledisp-title">
+                            <h1 className="rn-articledisp-title">
                                 { this.state.article.title }
                             </h1>
-                            <p class="rn-articledisp-date">By <Link to={ `${ links["ACCOUNT_PAGE"].absolute }/${ this.state.article.creator.login }` }>{ this.state.article.creator.name }</Link></p>
+                            <p className="rn-articledisp-date">By <Link to={ `${ links["ACCOUNT_PAGE"].absolute }/${ this.state.article.creator.login }` }>{ this.state.article.creator.name }</Link></p>
                             { parseHTML(this.state.article.contentHTML) }
                         </div>
                     ) : null

@@ -13,7 +13,8 @@ import Palettes from './pages/palettes';
 import Colors from './pages/colors';
 import Fonts from './pages/fonts';
 import Articles from './pages/articles';
-import ArticleDisplay from './pages/articledisp'
+import ArticleDisplay from './pages/articledisp';
+import Verifications from './pages/controlVerification';
 
 // Stuff
 import Navigation from './pages/__forall__/nav';
@@ -105,6 +106,14 @@ class App extends Component {
 							<ProtectedRoute
                                 path={ links["ARTICLE_DISPLAY_PAGE"].route }
                                 component={ ArticleDisplay }
+                                redirect={ Main }
+                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
+                                condition={ this.clientID }
+                                exact
+                            />
+							<ProtectedRoute
+                                path={ links["VERIFICATION_PAGE"].route }
+                                component={ Verifications }
                                 redirect={ Main }
                                 redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
                                 condition={ this.clientID }

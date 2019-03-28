@@ -1,0 +1,214 @@
+import React, { Component } from 'react';
+import './main.css';
+
+import client from '../../apollo';
+import links from '../../links';
+
+import { connect } from 'react-redux';
+import { gql } from 'apollo-boost';
+import parseHTML from 'html-react-parser';
+
+class Article extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            HTMLContent: null,
+            contentHidden: false,
+            isLoading: false
+        }
+    }
+
+    loadContent = () => {
+        if(this.state.isLoading) return;
+
+        this.setState(() => ({ isLoading: true }), () => this.props.startFetch(true));
+
+        client.query({
+            query: gql`
+                query($id: ID!) {
+                    getArticleItem(id: $id) {
+                        id,
+                        contentHTML
+                    }
+                }
+            `,
+            variables: {
+                id: this.props.id
+            }
+        }).then(({ data: { getArticleItem: a } }) => {
+            this.setState(() => ({ isLoading: false }), () => this.props.startFetch(false));
+
+            if(!a) return;
+
+            this.setState(() => ({
+                HTMLContent: a.contentHTML
+            }));
+        }).catch((err) => {
+            console.error(err);
+            this.setState(() => ({ isLoading: false }), () => this.props.startFetch(false));
+        });
+    }
+
+    render() {
+        return(
+            <div className="rn-verifications-item rn-verifications-article">
+                <p className="rn-verifications-article-title">{ this.props.title }</p>
+                <button className="rn-verifications-article-togglem definp btn" onClick={
+                    (!this.state.HTMLContent) ? this.loadContent : (
+                        () => this.setState(({ contentHidden: a }) => ({ contentHidden: !a }))
+                    )
+                }>
+                    {
+                        (!this.state.HTMLContent) ? "Load content" : (!this.state.contentHidden) ? (
+                            "Hide content"
+                        ) : "Show content"
+                    }
+                </button>
+                <span className="rn-articledisp-cover rn-verifications-article-title-preview">
+                    {
+                        (
+                            !this.state.contentHidden &&
+                            this.state.HTMLContent &&
+                            parseHTML(this.state.HTMLContent)
+                        ) || this.props.content
+                    }
+                </span>
+            </div>
+        );
+    }
+}
+
+class Hero extends Component {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            verified: false,
+            toVerificate: null,
+            isLoading: false
+        }
+    }
+
+    componentDidMount() {
+        this.beginVes();
+    }
+
+    beginVes = () => {
+        const castOut = (e = null) => {
+            if(e) console.error(e);
+            this.props.history.push(links["HOME_PAGE"].absolute);
+        }
+
+        this.props.startFetch(true);
+
+        client.query({
+            query: gql`
+                query {
+                    user {
+                        id,
+                        role
+                    }
+                }
+            `
+        }).then(({ data: { user: a } }) => {
+            if(!a || a.role !== 'main') {
+                this.props.startFetch(false);
+                return castOut();
+            }
+
+            this.setState(() => ({
+                verified: a.role === 'main'
+            }));
+            this.getData();
+        }).catch((err) => {
+            castOut(err);
+            this.props.startFetch(false);
+        });
+    }
+
+    getData = () => {
+        if(this.state.isLoading) return;
+
+        this.setState(() => ({ isLoading: true }), () => this.props.startFetch(true));
+
+        client.query({
+            query: gql`
+                query {
+                    getToVerifyFonts {
+                        id,
+                        src,
+                        name,
+                        fontName
+                    },
+                    getToVerifyArticles {
+                        id,
+                        title,
+                        previewContent
+                    }
+                }
+            `
+        }).then(({ data: { getToVerifyFonts: a, getToVerifyArticles: b } }) => {
+            this.setState(() => ({ isLoading: false }), () => this.props.startFetch(false));
+
+            if(!a || !b) return;
+
+            for(let ma of a) {
+                const a = document.createElement('link');
+        		a.setAttribute('rel', 'stylesheet');
+        		a.setAttribute('type', 'text/html');
+        		a.setAttribute('href', ma.src);
+        		document.head.appendChild(a);
+            }
+
+            this.setState(() => ({
+                toVerificate: [
+                    ...a.map(io => ({ ...io, __type: "FONT" })),
+                    ...b.map(io => ({ ...io, __type: "ARTICLE" }))
+                ].sort(() => Math.random() - 0.5)
+            }));
+        }).catch((err) => {
+            console.error(err);
+            this.setState(() => ({ isLoading: false }), () => this.props.startFetch(false));
+        });
+    }
+
+    render() {
+        if(!this.state.verified || !this.state.toVerificate) return null;
+
+        return(
+            <div className="rn rn-verifications">
+                {
+                    this.state.toVerificate.map((session) => {
+                        if(session.__type === "FONT") {
+                            return null;
+                        } else if(session.__type === "ARTICLE") {
+                            return(
+                                <Article
+                                    key={ session.id }
+                                    id={ session.id }
+                                    title={ session.title }
+                                    content={ session.previewContent }
+                                    startFetch={ this.props.startFetch }
+                                />
+                            );
+                        } else {
+                            return null;
+                        }
+                    })
+                }
+            </div>
+        );
+    }
+}
+
+const mapStateToProps = () => ({});
+
+const mapActionsToProps = {
+    startFetch: payload => ({ type: 'SET_FETCH_STATUS', payload })
+}
+
+export default connect(
+    mapStateToProps,
+    mapActionsToProps
+)(Hero);

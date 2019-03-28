@@ -524,7 +524,14 @@ class NavAccount extends Component {
                  onMouseLeave={ () => this.setState({ hover: false }) }>
                 {
                     (!this.state.hover) ? null : (
-                        <button onClick={ this.logout } className="definp btn">Logout</button>
+                        <>
+                            <button onClick={ this.logout } className="definp btn">Logout</button>
+                            {
+                                (this.props.client.role === 'main') ? (
+                                    <Link to={ links["VERIFICATION_PAGE"].absolute } className="definp btn">Verifications</Link>
+                                ) : null
+                            }
+                        </>
                     )
                 }
                 <Link to={ `${ links["ACCOUNT_PAGE"].absolute }/${ this.props.client.login }` }>{ this.props.client.name }</Link>
@@ -578,7 +585,8 @@ class Hero extends Component {
                     user {
                         id,
                         login,
-                        name
+                        name,
+                        role
                     }
                 }
             `
@@ -587,11 +595,7 @@ class Hero extends Component {
             if(!a) return reset();
 
             this.setState(() => ({
-                client: {
-                    id: a.id,
-                    name: a.name,
-                    login: a.login
-                }
+                client: a
             }));
         }).catch((err) => {
             this.props.startFetch(false);

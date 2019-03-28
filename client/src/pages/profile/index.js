@@ -136,7 +136,7 @@ class Hero extends Component {
                         id,
                         avatar,
                         name,
-                        permission,
+                        role,
                         colorsInt,
                         fontsInt,
                         articlesInt,
@@ -169,7 +169,7 @@ class Hero extends Component {
                         <img src={ api.storage + this.state.user.avatar } alt="user" />
                     </div>
                     <h2 className="rn-account-header-name">{ this.state.user.name }</h2>
-                    <p className="rn-account-header-status">{ this.state.user.permission }</p>
+                    <p className="rn-account-header-status">{ this.state.user.role }</p>
                     {
                         (this.state.user.id !== cookieControl.get("userid")) ? null : (
                             <Link to={ links["CREATE_PAGE"].absolute } className="rn-account-header-newpost definp btn">

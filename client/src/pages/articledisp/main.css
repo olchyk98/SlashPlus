@@ -22,31 +22,3 @@
 .rn-articledisp-date a {
     text-decoration:none;
 }
-
-/* OSI */
-.rn-articledisp-cover h3 {
-    font-size:2rem;
-    margin-bottom:7.5px;
-}
-
-.rn-articledisp-cover p {
-    font-family:"Quicksand";
-}
-
-.rn-articledisp-cover pre {
-    padding:12px 8px;
-    background:#eff0f1;
-    border-radius:2.5px;
-    overflow:scroll;
-}
-
-.rn-articledisp-cover figure {
-    margin:0;
-    max-width:100%;
-}
-
-.rn-articledisp-cover figure > img {
-    object-fit:cover;
-    object-position:center;
-    max-width:100%;
-}

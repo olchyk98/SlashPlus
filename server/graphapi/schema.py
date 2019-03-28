@@ -123,6 +123,9 @@ class RootQuery(GraphQL.ObjectType):
     getFonts = GraphQL.List(FontType, limit = GraphQL.NonNull(GraphQL.Int))
     getArticles = GraphQL.List(ArticleType, limit = GraphQL.NonNull(GraphQL.Int))
     readArticle = GraphQL.Field(ArticleType, id = GraphQL.NonNull(GraphQL.ID))
+    getToVerifyFonts = GraphQL.List(FontType)
+    getToVerifyArticles = GraphQL.List(ArticleType)
+    getArticleItem = GraphQL.Field(ArticleType, id = GraphQL.NonNull(GraphQL.ID))
 
     # - resolvers - #
     def resolve_users(self, info):
@@ -204,6 +207,31 @@ class RootQuery(GraphQL.ObjectType):
             raise GraphQLError("Invalid session")
         # end
 
+        try:
+            a = Article.objects.get(id = id)
+            return a
+        except:
+            return None
+        # end
+    # end
+
+    def resolve_getToVerifyFonts(self, info):
+        if(not info.context.session.get('userid', None)):
+            return None
+        # end
+
+        return Font.objects.filter(placeStatus = "WAITING").order_by('-date')
+    # end
+
+    def resolve_getToVerifyArticles(self, info):
+        if(not info.context.session.get('userid', None)):
+            return None
+        # end
+
+        return Article.objects.filter(placeStatus = "WAITING").order_by('-date')
+    # end
+
+    def resolve_getArticleItem(self, info, id):
         try:
             a = Article.objects.get(id = id)
             return a
