@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import './main.css';
 
 import { gql } from 'apollo-boost';
 import { connect } from 'react-redux';

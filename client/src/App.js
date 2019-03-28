@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 
 import { Switch, BrowserRouter } from 'react-router-dom';
-import { Route } from 'react-router';
+import { Route, Redirect } from 'react-router';
 
 import { Provider } from 'react-redux';
 
@@ -13,6 +13,7 @@ import Palettes from './pages/palettes';
 import Colors from './pages/colors';
 import Fonts from './pages/fonts';
 import Articles from './pages/articles';
+import ArticleDisplay from './pages/articledisp'
 
 // Stuff
 import Navigation from './pages/__forall__/nav';
@@ -52,7 +53,7 @@ class App extends Component {
                         <Navigation />
 						<Alert />
                         <Switch>
-                            <Route path={ links["HOME_PAGE"].route } exact component={ Main } />
+							<Route path={ links["HOME_PAGE"].route } exact component={ Main } />
 							<ProtectedRoute
                                 path={ links["ACCOUNT_PAGE"].route }
                                 component={ Profile }
@@ -101,6 +102,15 @@ class App extends Component {
                                 condition={ this.clientID }
                                 exact
                             />
+							<ProtectedRoute
+                                path={ links["ARTICLE_DISPLAY_PAGE"].route }
+                                component={ ArticleDisplay }
+                                redirect={ Main }
+                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
+                                condition={ this.clientID }
+                                exact
+                            />
+							<Redirect to={ links["HOME_PAGE"].absolute } />
                         </Switch>
                     </>
                 </BrowserRouter>

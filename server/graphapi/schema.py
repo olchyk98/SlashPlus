@@ -122,6 +122,7 @@ class RootQuery(GraphQL.ObjectType):
     getColors = GraphQL.List(ColorType, limit = GraphQL.NonNull(GraphQL.Int))
     getFonts = GraphQL.List(FontType, limit = GraphQL.NonNull(GraphQL.Int))
     getArticles = GraphQL.List(ArticleType, limit = GraphQL.NonNull(GraphQL.Int))
+    readArticle = GraphQL.Field(ArticleType, id = GraphQL.NonNull(GraphQL.ID))
 
     # - resolvers - #
     def resolve_users(self, info):
@@ -196,6 +197,19 @@ class RootQuery(GraphQL.ObjectType):
 
     def resolve_getArticles(self, info, limit):
         return Article.objects.filter(placeStatus = "ACCEPTED").order_by('?')[:limit]
+    # end
+
+    def resolve_readArticle(self, info, id):
+        if(not info.context.session.get('userid', None)):
+            raise GraphQLError("Invalid session")
+        # end
+
+        try:
+            a = Article.objects.get(id = id)
+            return a
+        except:
+            return None
+        # end
     # end
 # end
 
