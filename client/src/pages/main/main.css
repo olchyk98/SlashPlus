@@ -43,30 +43,3 @@
 	justify-content:space-between;
 	flex-wrap:wrap;
 }
-
-.rn-sections-item-content-article {
-	display:flex;
-	flex-direction:column;
-	width:385px;
-	max-width:100%;
-	margin:20px;
-}
-
-.rn-sections-item-content-article-title {
-	margin:0;
-	margin-bottom:12.5px;
-	font-size:1.75rem;
-	color:black;
-	font-family:"Lato";
-	font-weight:500;
-	text-decoration:none;
-}
-
-.rn-sections-item-content-article-content {
-	font-weight:100;
-	font-family:"Quicksand";
-	color:rgba(0, 0, 0, .65);
-	font-size:.9rem;
-	text-align:left;
-	margin:0;
-}

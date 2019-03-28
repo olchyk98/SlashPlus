@@ -11,6 +11,7 @@ import links from '../../links';
 
 import PalettesItem from '../__forall__/colorpalette';
 import FontsItem from '../__forall__/font';
+import ArticlesItem from '../__forall__/article';
 
 class Palettes extends PureComponent {
 	render() {
@@ -121,19 +122,6 @@ Fonts.propTypes = {
 	])
 }
 
-class ArticlesItem extends PureComponent {
-	render() {
-		return(
-			<article className="rn-sections-item-content-article">
-				<Link className="rn-sections-item-content-article-title" to="/">{ this.props.title }</Link>
-				<p className="rn-sections-item-content-article-content">
-					{ this.props.content }
-				</p>
-			</article>
-		);
-	}
-}
-
 ArticlesItem.propTypes = {
 	title: PropTypes.string.isRequired,
 	content: PropTypes.string.isRequired
@@ -143,7 +131,7 @@ class Articles extends PureComponent {
 	render() {
 		return(
 			<article className="rn-sections-item">
-				<Link to={ "/" } className="rn-sections-item-title">Articles</Link>
+				<Link to={ links["ARTICLES_PAGE"].absolute } className="rn-sections-item-title">Articles</Link>
 				<div className="rn-sections-item_split" />
 				<div className="rn-sections-item-content flex">
 					{
