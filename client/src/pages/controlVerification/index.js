@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { Component, PureComponent } from 'react';
+import PropTypes from 'prop-types';
 import './main.css';
 
 import client from '../../apollo';
@@ -53,7 +54,7 @@ class Article extends Component {
     render() {
         return(
             <div className="rn-verifications-item rn-verifications-article">
-                <p className="rn-verifications-article-title">{ this.props.title }</p>
+                <p className="rn-verifications-item-title">{ this.props.title }</p>
                 <button className="rn-verifications-article-togglem definp btn" onClick={
                     (!this.state.HTMLContent) ? this.loadContent : (
                         () => this.setState(({ contentHidden: a }) => ({ contentHidden: !a }))
@@ -74,9 +75,54 @@ class Article extends Component {
                         ) || this.props.content
                     }
                 </span>
+                <div className="rn-verifications-item-submit">
+                    <button className="reject definp">Reject</button>
+                    <button className="submit definp">Submit</button>
+                </div>
             </div>
         );
     }
+}
+
+Article.propTypes = {
+    startFetch: PropTypes.func.isRequired,
+    id: PropTypes.string.isRequired,
+    title: PropTypes.string.isRequired,
+    content: PropTypes.string.isRequired
+}
+
+class Font extends PureComponent {
+    componentDidMount() {
+        this.loadFont();
+    }
+
+    loadFont = () => {
+        const a = document.createElement('link');
+        a.setAttribute('rel', 'stylesheet');
+        a.setAttribute('type', 'text/html');
+        a.setAttribute('href', this.props.src);
+        document.head.appendChild(a);
+    }
+
+    render() {
+        return(
+            <div className="rn-verifications-item rn-verifications-font">
+                <p className="rn-verifications-item-title" style={{ fontFamily: this.props.execName }}>{ this.props.name }</p>
+                <span>SRC is valid: <strong>{ (!!this.props.src).toString() }</strong></span>
+                <span>Font exec name: <strong>{ this.props.execName }</strong></span>
+                <div className="rn-verifications-item-submit">
+                    <button className="reject definp">Reject</button>
+                    <button className="submit definp">Submit</button>
+                </div>
+            </div>
+        );
+    }
+}
+
+Font.propTypes = {
+    src: PropTypes.string.isRequired,
+    execName: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired
 }
 
 class Hero extends Component {
@@ -153,14 +199,6 @@ class Hero extends Component {
 
             if(!a || !b) return;
 
-            for(let ma of a) {
-                const a = document.createElement('link');
-        		a.setAttribute('rel', 'stylesheet');
-        		a.setAttribute('type', 'text/html');
-        		a.setAttribute('href', ma.src);
-        		document.head.appendChild(a);
-            }
-
             this.setState(() => ({
                 toVerificate: [
                     ...a.map(io => ({ ...io, __type: "FONT" })),
@@ -181,7 +219,14 @@ class Hero extends Component {
                 {
                     this.state.toVerificate.map((session) => {
                         if(session.__type === "FONT") {
-                            return null;
+                            return(
+                                <Font
+                                    key={ session.id }
+                                    src={ session.src }
+                                    execName={ session.fontName }
+                                    name={ session.name }
+                                />
+                            );
                         } else if(session.__type === "ARTICLE") {
                             return(
                                 <Article
@@ -193,6 +238,7 @@ class Hero extends Component {
                                 />
                             );
                         } else {
+                            console.error(`Invalid content type: ${ session.__type }`);
                             return null;
                         }
                     })
