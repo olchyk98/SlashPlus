@@ -55,70 +55,14 @@ class App extends Component {
 						<Alert />
                         <Switch>
 							<Route path={ links["HOME_PAGE"].route } exact component={ Main } />
-							<ProtectedRoute
-                                path={ links["ACCOUNT_PAGE"].route }
-                                component={ Profile }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["CREATE_PAGE"].route }
-                                component={ Create }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["PALETTES_PAGE"].route }
-                                component={ Palettes }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["COLORS_PAGE"].route }
-                                component={ Colors }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["FONTS_PAGE"].route }
-                                component={ Fonts }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["ARTICLES_PAGE"].route }
-                                component={ Articles }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["ARTICLE_DISPLAY_PAGE"].route }
-                                component={ ArticleDisplay }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
-							<ProtectedRoute
-                                path={ links["VERIFICATION_PAGE"].route }
-                                component={ Verifications }
-                                redirect={ Main }
-                                redirectPath={ `${ links["HOME_PAGE"].absolute }?toauth` }
-                                condition={ this.clientID }
-                                exact
-                            />
+							<Route path={ links["ACCOUNT_PAGE"].route } exact component={ Profile } />
+							<Route path={ links["CREATE_PAGE"].route } exact component={ Create } />
+							<Route path={ links["PALETTES_PAGE"].route } exact component={ Palettes } />
+							<Route path={ links["COLORS_PAGE"].route } exact component={ Colors } />
+							<Route path={ links["FONTS_PAGE"].route } exact component={ Fonts } />
+							<Route path={ links["ARTICLES_PAGE"].route } exact component={ Articles } />
+							<Route path={ links["ARTICLE_DISPLAY_PAGE"].route } exact component={ ArticleDisplay } />
+							<Route path={ links["VERIFICATION_PAGE"].route } exact component={ Verifications } />
 							<Redirect to={ links["HOME_PAGE"].absolute } />
                         </Switch>
                     </>
