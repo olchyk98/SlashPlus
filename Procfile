@@ -1,1 +1,1 @@
-web: gunicorn server.wsgi
+worker: python manage.py
