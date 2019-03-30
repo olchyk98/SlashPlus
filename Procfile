@@ -1,1 +1,1 @@
-web: gunicorn SlashPlus.wsgi
+web: gunicorn server.wsgi
