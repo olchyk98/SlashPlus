@@ -259,7 +259,8 @@ class RootMutation(GraphQL.ObjectType):
                 login = login,
                 password = password,
                 email = email,
-                avatar = '/media/avatars/default.svg'
+                avatar = '/media/avatars/default.svg',
+                role = 'user'
             )
             user.save()
 

@@ -8,7 +8,7 @@ urlpatterns = [
     path('api', include('graphapi.urls')),
 
     path('', include('client.urls')),
-    re_path(r'^(?P<path>.*)/$', include('client.urls'))
+    re_path(r'^(?P<path>.*)/', include('client.urls'))
 ]
 
 # Allow to get media files
