@@ -8,6 +8,7 @@ import links from '../../links';
 import { connect } from 'react-redux';
 import { gql } from 'apollo-boost';
 import parseHTML from 'html-react-parser';
+import FlipMove from 'react-flip-move';
 
 class Article extends Component {
     constructor(props) {
@@ -51,6 +52,36 @@ class Article extends Component {
         });
     }
 
+    reject = () => {
+        this.props.onClose();
+        client.mutate({
+            mutation: gql`
+                mutation($id: ID!, $target: String!) {
+                    verifyAsset(id: $id, isVerified: false, target: $target)
+                }
+            `,
+            variables: {
+                id: this.props.id,
+                target: "ARTICLE"
+            }
+        }).catch(console.error);
+    }
+
+    submit = () => {
+        this.props.onClose();
+        client.mutate({
+            mutation: gql`
+                mutation($id: ID!, $target: String!) {
+                    verifyAsset(id: $id, isVerified: true, target: $target)
+                }
+            `,
+            variables: {
+                id: this.props.id,
+                target: "ARTICLE"
+            }
+        }).catch(console.error);
+    }
+
     render() {
         return(
             <div className="rn-verifications-item rn-verifications-article">
@@ -76,8 +107,8 @@ class Article extends Component {
                     }
                 </span>
                 <div className="rn-verifications-item-submit">
-                    <button className="reject definp">Reject</button>
-                    <button className="submit definp">Submit</button>
+                    <button className="reject definp" onClick={ this.reject }>Reject</button>
+                    <button className="submit definp" onClick={ this.submit }>Submit</button>
                 </div>
             </div>
         );
@@ -104,6 +135,36 @@ class Font extends PureComponent {
         document.head.appendChild(a);
     }
 
+    reject = () => {
+        this.props.onClose();
+        client.mutate({
+            mutation: gql`
+                mutation($id: ID!, $target: String!) {
+                    verifyAsset(id: $id, isVerified: false, target: $target)
+                }
+            `,
+            variables: {
+                id: this.props.id,
+                target: "FONT"
+            }
+        }).catch(console.error);
+    }
+
+    submit = () => {
+        this.props.onClose();
+        client.mutate({
+            mutation: gql`
+                mutation($id: ID!, $target: String!) {
+                    verifyAsset(id: $id, isVerified: true, target: $target)
+                }
+            `,
+            variables: {
+                id: this.props.id,
+                target: "FONT"
+            }
+        }).catch(console.error);
+    }
+
     render() {
         return(
             <div className="rn-verifications-item rn-verifications-font">
@@ -111,8 +172,8 @@ class Font extends PureComponent {
                 <span>SRC is valid: <strong>{ (!!this.props.src).toString() }</strong></span>
                 <span>Font exec name: <strong>{ this.props.execName }</strong></span>
                 <div className="rn-verifications-item-submit">
-                    <button className="reject definp">Reject</button>
-                    <button className="submit definp">Submit</button>
+                    <button className="reject definp" onClick={ this.reject }>Reject</button>
+                    <button className="submit definp" onClick={ this.submit }>Submit</button>
                 </div>
             </div>
         );
@@ -211,11 +272,15 @@ class Hero extends Component {
         });
     }
 
+    hideItem = id => this.setState(({ toVerificate: a }) => ({
+        toVerificate: a.filter(io => io.id !== id)
+    }));
+
     render() {
         if(!this.state.verified || !this.state.toVerificate) return null;
 
         return(
-            <div className="rn rn-verifications">
+            <FlipMove className="rn rn-verifications" enterAnimation="elevator" leaveAnimation="elevator">
                 {
                     this.state.toVerificate.map((session) => {
                         if(session.__type === "FONT") {
@@ -223,8 +288,10 @@ class Hero extends Component {
                                 <Font
                                     key={ session.id }
                                     src={ session.src }
+                                    id={ session.id }
                                     execName={ session.fontName }
                                     name={ session.name }
+                                    onClose={ () => this.hideItem(session.id) }
                                 />
                             );
                         } else if(session.__type === "ARTICLE") {
@@ -235,6 +302,7 @@ class Hero extends Component {
                                     title={ session.title }
                                     content={ session.previewContent }
                                     startFetch={ this.props.startFetch }
+                                    onClose={ () => this.hideItem(session.id) }
                                 />
                             );
                         } else {
@@ -243,7 +311,7 @@ class Hero extends Component {
                         }
                     })
                 }
-            </div>
+            </FlipMove>
         );
     }
 }

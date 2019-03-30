@@ -424,7 +424,51 @@ class RootMutation(GraphQL.ObjectType):
 
             return art
         # end
+    # end
 
+    class VerifyAssetMutation(GraphQL.Mutation):
+        class Arguments:
+            id = GraphQL.NonNull(GraphQL.ID)
+            isVerified = GraphQL.NonNull(GraphQL.Boolean)
+            target = GraphQL.NonNull(GraphQL.String)
+        # end
+
+        Output = GraphQL.Boolean
+
+        def mutate(self, info, id, isVerified, target):
+            uid = info.context.session.get('userid', None)
+
+            if(not uid): return None
+
+            try:
+                u = User.objects.get(id = uid)
+                if(u.role != 'main'): return None
+
+                try:
+                    if(target == "ARTICLE"):
+                        tar = Article.objects.get(id = id)
+                    elif(target == "FONT"):
+                        tar = Font.objects.get(id = id)
+                    else:
+                        return None
+                    # end
+
+                    if(isVerified):
+                        tar.placeStatus = "ACCEPTED"
+                    else:
+                        tar.placeStatus = "DENIED"
+                    # end
+
+                    tar.save()
+
+                    return True
+                except:
+                    return None
+                # end
+            except:
+                raise GraphQLError("Compromised session")
+            # end
+        # end
     # end
 
     registerUser = RegisterMutation.Field()
@@ -434,6 +478,7 @@ class RootMutation(GraphQL.ObjectType):
     addPalette = AddPaletteMutation.Field()
     addFont = AddFontMutation.Field()
     addArticle = AddArticleMutation.Field()
+    verifyAsset = VerifyAssetMutation.Field()
 # end
 
 
